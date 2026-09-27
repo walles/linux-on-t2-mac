@@ -14,7 +14,6 @@ Sorted in priority order. Once something works, move to DONE.
   things needing some parameter somewhere to fix battery usage.
 - Suspend to RAM on lid close. And wake back up on lid open with everything
   working. Specifically, keyboard, trackpad, wifi, touch bar.
-- Install vscode, set as default editor
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane.
 - Consider the threat model for LUKS. The only thing I could imagine is the
@@ -35,3 +34,4 @@ Sorted in priority order. Once something works, move to DONE.
     xHCI controllers runtime-suspended and never woke on plug-in, since Apple
     firmware lacks the ACPI links for that. Now they're kept powered on.
 - Both installed with `sudo ./install-fixes.sh`.
+- Install vscode, set as default editor
