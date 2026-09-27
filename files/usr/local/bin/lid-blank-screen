@@ -1,0 +1,29 @@
+#!/bin/bash
+# Lock the session and turn the screen off when the lid closes, and turn the
+# screen back on when it opens. Lid close is otherwise ignored (see
+# /etc/systemd/logind.conf.d/lid-ignore.conf), since resume from suspend
+# doesn't work, and GNOME leaves the built-in screen on with the lid closed.
+
+set_power_save() {
+  # 0 = on, 3 = off
+  busctl --user set-property org.gnome.Mutter.DisplayConfig \
+    /org/gnome/Mutter/DisplayConfig org.gnome.Mutter.DisplayConfig \
+    PowerSaveMode i "$1"
+}
+
+gdbus monitor --system --dest org.freedesktop.UPower \
+  --object-path /org/freedesktop/UPower |
+  while read -r line; do
+    case "$line" in
+    *"'LidIsClosed': <true>"*)
+      busctl --user call org.gnome.ScreenSaver /org/gnome/ScreenSaver \
+        org.gnome.ScreenSaver Lock
+      # Let the lock screen come up first, it turns the screen on
+      sleep 1
+      set_power_save 3
+      ;;
+    *"'LidIsClosed': <false>"*)
+      set_power_save 0
+      ;;
+    esac
+  done

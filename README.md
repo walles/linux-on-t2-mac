@@ -4,9 +4,6 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Want to be able to close lid and open it again after a minute. Computer
-  should be alive and healthy with keyboard, wifi and things working.
-  Whatever is easiest, even if power consumption is still on lid-open levels.
 - Hard code password "empty" in initrd somewhere so I don't have to type it
   at boot. If we at some point go for a real password, the hard coded password
   would have to go.
@@ -35,3 +32,6 @@ Sorted in priority order. Once something works, move to DONE.
     firmware lacks the ACPI links for that. Now they're kept powered on.
 - Both installed with `sudo ./install-fixes.sh`.
 - Install vscode, set as default editor
+- Want to be able to close lid and open it again after a minute. Computer
+  should be alive and healthy with keyboard, wifi and things working.
+  Whatever is easiest, even if power consumption is still on lid-open levels.
