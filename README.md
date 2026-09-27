@@ -17,6 +17,10 @@ Sorted in priority order. Once something works, move to DONE.
 - Install vscode, set as default editor
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane.
+- Consider the threat model for LUKS. The only thing I could imagine is the
+  computer being stolen and possibly examined by an unskilled attacker. Maybe
+  they'd boot from their own live USB and try to access data. Then decide on
+  where to go, dummy password like now or a real one?
 
 # DONE
 
