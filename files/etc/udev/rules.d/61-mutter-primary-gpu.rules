@@ -1,0 +1,7 @@
+# Make GNOME render on the Intel iGPU. Even with apple-gmux force_igd, GNOME
+# may pick the Radeon as primary GPU and copy every frame over to the iGPU,
+# keeping the Radeon busy.
+#
+# Match on the driver: card numbers can change, and matching the Intel vendor
+# ID also hits the Radeon, which sits behind an Intel PCIe bridge.
+SUBSYSTEM=="drm", KERNEL=="card[0-9]*", DRIVERS=="i915", TAG+="mutter-device-preferred-primary"
