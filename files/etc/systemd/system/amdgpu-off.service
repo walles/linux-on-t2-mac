@@ -1,0 +1,13 @@
+[Unit]
+Description=Power off the Radeon GPU
+Requires=sys-kernel-debug.mount
+After=sys-kernel-debug.mount systemd-modules-load.service
+# Before GNOME starts, since it would keep the Radeon open
+Before=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/amdgpu-off
+
+[Install]
+WantedBy=multi-user.target

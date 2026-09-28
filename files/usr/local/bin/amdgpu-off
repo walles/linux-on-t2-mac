@@ -1,0 +1,29 @@
+#!/bin/bash
+# Power off the Radeon. The Intel iGPU drives the screen (see
+# /etc/modprobe.d/apple-gmux.conf), and the Radeon can't power itself down
+# ("Runtime PM not available"), so it would otherwise idle at full power.
+#
+# External monitors probably don't work with the Radeon off. To get them back:
+# sudo systemctl disable amdgpu-off, and reboot.
+
+SWITCH=/sys/kernel/debug/vgaswitcheroo/switch
+
+# The switch shows up once both GPU drivers have loaded. The Radeon's driver
+# can come up 10s after the login screen would otherwise have started.
+for _ in $(seq 60); do
+  [[ -e $SWITCH ]] && break
+  sleep 1
+done
+cat "$SWITCH" || exit 1
+
+# OFF powers off whichever GPU is not driving the screen. On the Ubuntu fallback
+# kernel that's the Intel one, leave things alone then.
+if ! grep -q ':IGD:+:' "$SWITCH"; then
+  echo "The Intel GPU isn't driving the screen, not powering off the Radeon"
+  exit 0
+fi
+
+# Refused if something has the Radeon open, so check that it happened
+echo OFF >"$SWITCH"
+cat "$SWITCH"
+grep -q ':DIS:.*:Off:' "$SWITCH"
