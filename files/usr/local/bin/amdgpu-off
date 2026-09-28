@@ -5,6 +5,9 @@
 #
 # External monitors probably don't work with the Radeon off. To get them back:
 # sudo systemctl disable amdgpu-off, and reboot.
+#
+# Switching it back on with "echo ON" fails ("device inaccessible"), and leaves
+# the Radeon drawing lots of power. Reboot instead.
 
 SWITCH=/sys/kernel/debug/vgaswitcheroo/switch
 
