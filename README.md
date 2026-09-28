@@ -4,8 +4,6 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Lower power consumption with lid open. Read something about graphics and
-  things needing some parameter somewhere to fix battery usage.
 - Suspend to RAM on lid close. And wake back up on lid open with everything
   working. Specifically, keyboard, trackpad, wifi, touch bar.
 - Get a terminal program that can do split panes. And can search in the
@@ -35,3 +33,5 @@ Sorted in priority order. Once something works, move to DONE.
 - Hard code password "empty" in initrd somewhere so I don't have to type it
   at boot. If we at some point go for a real password, the hard coded password
   would have to go.
+- Lower power consumption with lid open. Read something about graphics and
+  things needing some parameter somewhere to fix battery usage.
