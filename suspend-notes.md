@@ -37,7 +37,6 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
    screen stayed black, maybe with the backlight on. Hard power off after a
    while. amdgpu logged lots of `Adding stream ... failed with err 28` and
    `Cannot find any crtc or sizes` during resume.
-
 6. Same as 5, then `MIGD` to vgaswitcheroo 3s after the resume, to switch only
    the mux back to the Intel GPU. The screen was on but still black. The
    keyboard worked, fn switched the touch bar. vgaswitcheroo showed the same
@@ -45,11 +44,18 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
    resume. The `Adding stream ... err 28` messages happen at every boot too,
    so they're unrelated.
 
+7. Same as 6, then a switch to VT3 and back to VT2. Backlight on, no pixels
+   at any point. i915 thinks everything works: eDP-1 connected, the plane
+   visible at 3072x1920, and it showed new framebuffers for GNOME and for the
+   VT3 console. PSR isn't in use (`i915_edp_psr_status`: No such device). So
+   i915 sends out frames, but they don't reach the panel.
+
 ## Next
 
-- Log i915's view of the screen (PSR status, display info) after the resume,
-  then switch VTs, which makes both the console and GNOME set the screen up
-  from scratch.
+- Guess: the link from i915 to the panel is dead after the resume, and a VT
+  switch at the same resolution doesn't set it up again. Test: turn the screen
+  off and on through GNOME (PowerSaveMode 3, then 0), which does a full
+  modeset, with and without `MIGD` first. With drm debug logging on.
 - Then: patch amdgpu to skip the reset in `suspend_noirq` when vgaswitcheroo
   has powered the card off, so `amdgpu-off` can be used again.
 
