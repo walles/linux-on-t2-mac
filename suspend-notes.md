@@ -58,6 +58,10 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
    drawing to a dead link without saying so at normal log levels. Turning the
    screen on again later trained the link fine.
 
+9. Screen off through GNOME, then `rtcwake -m mem -s 30`, then screen on
+   right after the resume. The picture came back immediately, and the link
+   trained 0.28s after `PM: suspend exit`.
+
 ## Conclusions
 
 - Suspend to RAM works on this machine. The keyboard, trackpad, touch bar and
@@ -67,15 +71,20 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
   and apple_gmux switches it back only after i915 has resumed. PCI devices
   come before the gmux ACPI device in the resume order, and `pm_async=off`
   makes that order strict.
+- With the screen off before suspending and on after, like lid close does,
+  the screen works without any kernel fix.
+- The Radeon has to be on for suspend to work. Awake, that's about 21 W
+  instead of about 7 W, much more than suspend could save. So suspend is only
+  worth using with the amdgpu fix below.
 
 ## Next
 
-- Test: turn the screen off through GNOME before suspending, and on right
-  after the resume, the way lid close would do it. If that works right away,
-  the lid close flow might not need any kernel fix.
-- Kernel fix: a device link from i915 to apple_gmux, so gmux resumes first.
-- Then: patch amdgpu to skip the reset in `suspend_noirq` when vgaswitcheroo
-  has powered the card off, so `amdgpu-off` can be used again.
+- Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
+- Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
+  vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
+- Optional kernel fix: a device link from i915 to apple_gmux, so gmux resumes
+  first. Needed for suspend without turning the screen off first, like from
+  the GNOME menu.
 
 ## Side findings
 
