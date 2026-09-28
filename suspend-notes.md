@@ -38,12 +38,18 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
    while. amdgpu logged lots of `Adding stream ... failed with err 28` and
    `Cannot find any crtc or sizes` during resume.
 
+6. Same as 5, then `MIGD` to vgaswitcheroo 3s after the resume, to switch only
+   the mux back to the Intel GPU. The screen was on but still black. The
+   keyboard worked, fn switched the touch bar. vgaswitcheroo showed the same
+   state before and after. i915 and GNOME logged nothing during or after the
+   resume. The `Adding stream ... err 28` messages happen at every boot too,
+   so they're unrelated.
+
 ## Next
 
-- Guess: the firmware sets the display mux back to the Radeon in S3, and
-  apple_gmux (`force_igd=y`) only switches it to the Intel GPU at boot. Test:
-  `MIGD` to vgaswitcheroo after the resume, which switches only the mux.
-- If that works: a system-sleep hook that does it on every resume.
+- Log i915's view of the screen (PSR status, display info) after the resume,
+  then switch VTs, which makes both the console and GNOME set the screen up
+  from scratch.
 - Then: patch amdgpu to skip the reset in `suspend_noirq` when vgaswitcheroo
   has powered the card off, so `amdgpu-off` can be used again.
 
