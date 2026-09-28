@@ -50,12 +50,30 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
    VT3 console. PSR isn't in use (`i915_edp_psr_status`: No such device). So
    i915 sends out frames, but they don't reach the panel.
 
+8. Same as 5, with drm debug logging (`drm.debug=0x106`), then 5s after the
+   resume the screen off and on through GNOME (PowerSaveMode 3, then 0). The
+   picture came back 7.8s after the resume, from that alone, before `MIGD`.
+   The debug log shows why: during the resume i915 got AUX timeouts from the
+   panel, `Set power to D0 failed` and `Link Training failed`, and then kept
+   drawing to a dead link without saying so at normal log levels. Turning the
+   screen on again later trained the link fine.
+
+## Conclusions
+
+- Suspend to RAM works on this machine. The keyboard, trackpad, touch bar and
+  wifi come back.
+- The black screen: i915 sets up the panel during the resume, before the panel
+  can be reached. Guess: the firmware switches the mux to the Radeon in S3,
+  and apple_gmux switches it back only after i915 has resumed. PCI devices
+  come before the gmux ACPI device in the resume order, and `pm_async=off`
+  makes that order strict.
+
 ## Next
 
-- Guess: the link from i915 to the panel is dead after the resume, and a VT
-  switch at the same resolution doesn't set it up again. Test: turn the screen
-  off and on through GNOME (PowerSaveMode 3, then 0), which does a full
-  modeset, with and without `MIGD` first. With drm debug logging on.
+- Test: turn the screen off through GNOME before suspending, and on right
+  after the resume, the way lid close would do it. If that works right away,
+  the lid close flow might not need any kernel fix.
+- Kernel fix: a device link from i915 to apple_gmux, so gmux resumes first.
 - Then: patch amdgpu to skip the reset in `suspend_noirq` when vgaswitcheroo
   has powered the card off, so `amdgpu-off` can be used again.
 
