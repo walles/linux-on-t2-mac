@@ -31,13 +31,21 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 4. `rtcwake -m freeze -s 30`, a real s2idle sleep: never woke up, and the fan
    kept running. Hard power off. Not even `suspend entry` was saved to the log.
    So waking from s2idle is broken, even with a timer.
+5. `rtcwake -m mem -s 30` with `amdgpu-off` disabled, Radeon on: entered S3
+   and resumed. After about a minute the keyboard backlight and touch bar came
+   back, and the log shows the keyboard, trackpad and wifi back too. But the
+   screen stayed black, maybe with the backlight on. Hard power off after a
+   while. amdgpu logged lots of `Adding stream ... failed with err 28` and
+   `Cannot find any crtc or sizes` during resume.
 
 ## Next
 
-- `rtcwake -m mem -s 30` with `amdgpu-off` disabled, to see if deep works
-  apart from the Radeon.
-- If it does: patch amdgpu to skip the reset in `suspend_noirq` when
-  vgaswitcheroo has powered the card off.
+- Guess: the firmware sets the display mux back to the Radeon in S3, and
+  apple_gmux (`force_igd=y`) only switches it to the Intel GPU at boot. Test:
+  `MIGD` to vgaswitcheroo after the resume, which switches only the mux.
+- If that works: a system-sleep hook that does it on every resume.
+- Then: patch amdgpu to skip the reset in `suspend_noirq` when vgaswitcheroo
+  has powered the card off, so `amdgpu-off` can be used again.
 
 ## Side findings
 
