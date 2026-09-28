@@ -1,0 +1,10 @@
+# Keep the text console on screen. It starts on the firmware framebuffer, which
+# the Radeon driver removes when it loads. The console then goes to a dummy
+# device instead of the Intel GPU's framebuffer, leaving the screen black until
+# GNOME starts, and during shutdown. This binds it again, to the framebuffer
+# that's left.
+#
+# The sleep is since the kernel is still switching framebuffers when we get
+# the remove event. Binding right away didn't work.
+SUBSYSTEM=="graphics", KERNEL=="fb[0-9]*", ACTION=="add|remove", \
+  RUN+="/bin/sh -c 'sleep 1; for V in /sys/class/vtconsole/vtcon*; do grep -q \"frame buffer\" $$V/name && echo 1 >$$V/bind; done'"
