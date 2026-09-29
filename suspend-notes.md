@@ -43,13 +43,11 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
    state before and after. i915 and GNOME logged nothing during or after the
    resume. The `Adding stream ... err 28` messages happen at every boot too,
    so they're unrelated.
-
 7. Same as 6, then a switch to VT3 and back to VT2. Backlight on, no pixels
    at any point. i915 thinks everything works: eDP-1 connected, the plane
    visible at 3072x1920, and it showed new framebuffers for GNOME and for the
    VT3 console. PSR isn't in use (`i915_edp_psr_status`: No such device). So
    i915 sends out frames, but they don't reach the panel.
-
 8. Same as 5, with drm debug logging (`drm.debug=0x106`), then 5s after the
    resume the screen off and on through GNOME (PowerSaveMode 3, then 0). The
    picture came back 7.8s after the resume, from that alone, before `MIGD`.
@@ -57,7 +55,6 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
    panel, `Set power to D0 failed` and `Link Training failed`, and then kept
    drawing to a dead link without saying so at normal log levels. Turning the
    screen on again later trained the link fine.
-
 9. Screen off through GNOME, then `rtcwake -m mem -s 30`, then screen on
    right after the resume. The picture came back immediately, and the link
    trained 0.28s after `PM: suspend exit`.
