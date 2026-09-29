@@ -58,6 +58,12 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 9. Screen off through GNOME, then `rtcwake -m mem -s 30`, then screen on
    right after the resume. The picture came back immediately, and the link
    trained 0.28s after `PM: suspend exit`.
+10. Lid close with `lid-blank-screen` suspending, Radeon on: suspended, and
+    opening the lid woke it up. logind and UPower saw the lid open, and the
+    screen came back. But waking took about 23s: the lid opened around
+    19:40:00, and the kernel took over at 19:40:23. The kernel's part of the
+    resume took 0.2s, so the rest is before Linux runs. Tests 5 and 6 were the
+    same: `rtcwake -s 30` came back after 56s both times.
 
 ## Conclusions
 
@@ -70,12 +76,19 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
   makes that order strict.
 - With the screen off before suspending and on after, like lid close does,
   the screen works without any kernel fix.
+- Suspend on lid close works: `lid-blank-screen` suspends after turning the
+  screen off, if the Radeon is on, the lid is still closed and it isn't
+  docked. The Radeon check reads its PCI vendor ID, since `power_state` says
+  D3hot, not D3cold, when amdgpu-off has cut its power.
+- Waking takes about 23s, all of it before the kernel resumes.
 - The Radeon has to be on for suspend to work. Awake, that's about 21 W
   instead of about 7 W, much more than suspend could save. So suspend is only
   worth using with the amdgpu fix below.
 
 ## Next
 
+- Find out why waking takes about 23s. It happens before the kernel gets
+  control, so maybe the firmware or the T2 chip.
 - Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.

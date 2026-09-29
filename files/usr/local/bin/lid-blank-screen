@@ -1,14 +1,38 @@
 #!/bin/bash
-# Lock the session and turn the screen off when the lid closes, and turn the
-# screen back on when it opens. Lid close is otherwise ignored (see
-# /etc/systemd/logind.conf.d/lid-ignore.conf), since resume from suspend
-# doesn't work, and GNOME leaves the built-in screen on with the lid closed.
+# Lock the session, turn the screen off and suspend when the lid closes, and
+# turn the screen back on when it opens. logind ignores the lid (see
+# /etc/systemd/logind.conf.d/lid-ignore.conf), since the screen has to be off
+# before suspending. Otherwise it stays black after the resume.
+#
+# Suspend hangs the machine with the Radeon powered off (amdgpu-off), so then
+# this only turns the screen off. Same with an external monitor connected,
+# like logind does by default.
+#
+# Known problem: if something other than the lid wakes the machine, it stays
+# awake with the lid closed and the screen off.
 
 set_power_save() {
   # 0 = on, 3 = off
   busctl --user set-property org.gnome.Mutter.DisplayConfig \
     /org/gnome/Mutter/DisplayConfig org.gnome.Mutter.DisplayConfig \
     PowerSaveMode i "$1"
+}
+
+radeon_is_on() {
+  # Its PCI vendor ID reads as ffff when amdgpu-off has cut its power. Its
+  # power_state says D3hot then, same as for a sleeping card, so it can't
+  # tell.
+  [[ $(od -An -tx2 -N2 /sys/bus/pci/devices/0000:03:00.0/config) == " 1002" ]]
+}
+
+lid_is_closed() {
+  [[ $(busctl get-property org.freedesktop.UPower /org/freedesktop/UPower \
+    org.freedesktop.UPower LidIsClosed) == "b true" ]]
+}
+
+is_docked() {
+  [[ $(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 \
+    org.freedesktop.login1.Manager Docked) != "b false" ]]
 }
 
 gdbus monitor --system --dest org.freedesktop.UPower \
@@ -21,6 +45,10 @@ gdbus monitor --system --dest org.freedesktop.UPower \
       # Let the lock screen come up first, it turns the screen on
       sleep 1
       set_power_save 3
+      # The lid may have opened again during the sleep
+      if radeon_is_on && lid_is_closed && ! is_docked; then
+        systemctl suspend
+      fi
       ;;
     *"'LidIsClosed': <false>"*)
       set_power_save 0
