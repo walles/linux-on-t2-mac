@@ -4,8 +4,10 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Suspend to RAM on lid close. And wake back up on lid open with everything
-  working. Specifically, keyboard, trackpad, wifi, touch bar.
+- Suspend to RAM with the Radeon off. Now it only works with the Radeon on,
+  which costs about 15 W extra while awake. See `suspend-notes.md`.
+- Wake up from suspend quickly. Now it takes about 23s before Linux even
+  gets control. macOS wakes up immediately, so it's possible.
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane.
 - Consider the threat model for LUKS. The only thing I could imagine is the
@@ -15,6 +17,11 @@ Sorted in priority order. Once something works, move to DONE.
 
 # DONE
 
+- Suspend to RAM on lid close. And wake back up on lid open with everything
+  working. Specifically, keyboard, trackpad, wifi, touch bar.
+  - `files/usr/local/bin/lid-blank-screen` turns the screen off and then
+    suspends, but only with the Radeon on. The screen has to be off before
+    suspending, otherwise it stays black after the resume.
 - GNOME thinks I have a mouse, not a trackpad. Can't two finger scroll or
   two-finger click for right click. GNOME settings say nothing about
   trackpads.

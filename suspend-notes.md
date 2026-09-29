@@ -1,7 +1,8 @@
 # Suspend notes
 
-Working notes for the "Suspend to RAM on lid close" TODO. Remove this file once
-suspend works, with the conclusions in the commit message.
+Working notes for the suspend TODOs: suspend with the Radeon off, and waking
+up quickly. Remove this file once both work, with the conclusions in the
+commit message.
 
 ## Goal
 
@@ -88,7 +89,8 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Next
 
 - Find out why waking takes about 23s. It happens before the kernel gets
-  control, so maybe the firmware or the T2 chip.
+  control, so maybe the firmware or the T2 chip. macOS wakes up immediately,
+  so it's possible.
 - Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
