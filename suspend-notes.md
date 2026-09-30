@@ -97,6 +97,12 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 
     That's 20.6s, run one at a time because of `pm_async=off`. 00:1c.0
     also took 1.0s to suspend. No messages explain the waits.
+15. Lid close with the `function_graph` tracer on, limited by
+    `set_graph_function` to `pci_pm_suspend_noirq` and `pci_pm_resume_noirq`,
+    and `tracing_thresh` at 100ms: never woke up, hard power off. The log
+    ends at `PM: suspend entry`. `set_graph_function` only limits what gets
+    recorded, all kernel functions still get the tracing hook, maybe also
+    in code that can't take it during suspend.
 
 ## Conclusions
 
