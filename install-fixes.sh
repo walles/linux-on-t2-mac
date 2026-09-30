@@ -39,17 +39,18 @@ if ! grep -q 'kernel/firmware/acpi/tbt-peg12.aml' <<<"$CONTENTS"; then
     exit 1
 fi
 
-# bcm5974 must be force-loaded before apple_bce brings up the internal USB bus
+# bcm5974 must be force-loaded before the T2 driver brings up the internal USB
+# bus. The T2 kernel calls that driver t2bce_vhci, Ubuntu's apple-bce.
 echo
 echo "Force-loaded drivers in the new initramfs, in load order:"
 DRIVERS=$(lsinitrd -f etc/cmdline.d/20-force_drivers.conf "$INITRD" | grep -o 'rd.driver.pre=[^ ]*' || true)
 echo "$DRIVERS"
-if echo "$DRIVERS" | grep -A100 -x 'rd.driver.pre=bcm5974' | grep -qx 'rd.driver.pre=apple_bce'; then
+if echo "$DRIVERS" | grep -A100 -x 'rd.driver.pre=bcm5974' | grep -qxE 'rd.driver.pre=(apple_bce|t2bce_vhci)'; then
     echo
-    echo "OK: bcm5974 loads before apple_bce. Reboot to test."
+    echo "OK: bcm5974 loads before the T2 driver. Reboot to test."
 else
     echo
-    echo "PROBLEM: expected rd.driver.pre=bcm5974 before rd.driver.pre=apple_bce" >&2
+    echo "PROBLEM: expected rd.driver.pre=bcm5974 before rd.driver.pre=apple_bce or t2bce_vhci" >&2
     echo "Old initramfs is at $INITRD.bak" >&2
     exit 1
 fi
