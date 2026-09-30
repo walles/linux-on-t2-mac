@@ -32,7 +32,8 @@ fi
 dracut --force --kver "$KVER"
 
 # The kernel only picks up ACPI tables from the early, uncompressed part
-if ! lsinitrd "$INITRD" | grep -q 'kernel/firmware/acpi/tbt-peg12.aml'; then
+CONTENTS=$(lsinitrd "$INITRD")
+if ! grep -q 'kernel/firmware/acpi/tbt-peg12.aml' <<<"$CONTENTS"; then
     echo "PROBLEM: tbt-peg12.aml is not in $INITRD" >&2
     echo "Old initramfs is at $INITRD.bak" >&2
     exit 1
