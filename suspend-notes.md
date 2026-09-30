@@ -78,7 +78,10 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     without the firmware being involved. The screen came back, but wifi
     didn't: `brcmfmac: Unable to change power state from D3cold to D0`, and
     probing it again failed. Maybe because there was no real S3 to power it
-    back up. A reboot fixed it.
+    back up. The reboot hung after `Rebooting.`, so it needed a hard power
+    off.
+13. `pm_test=platform`, same as 12: 30.9s by the wall clock, so the delay is
+    there too. Wifi died the same way, and the reboot hung the same way.
 
 ## Conclusions
 
@@ -112,10 +115,9 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
   - Linux spends the time, not the firmware: `pm_test=core` has the same
     delay (test 12), and it stops before the real sleep. With
     `pm_test=devices` (test 3) the extra time was only about 2s. So the
-    delay comes from the levels in between: `platform` (the noirq device
-    callbacks and the ACPI `_PTS` and `_WAK` methods), `processors` (taking
-    the CPUs offline, already done early here) or `core` (the syscore
-    callbacks).
+    delay comes from the `platform` level (test 13): the late and noirq
+    device callbacks, like amdgpu's mode1 reset and its resume after that,
+    and the ACPI `_PTS` and `_WAK` methods.
   - It's not bringing the CPUs back up (test 11), and not the early CPU
     offlining either: the gap is just as long without it.
 - Others see the same thing on T2 Macs:
@@ -138,9 +140,10 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Next
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
-  possible. Linux spends the time. Next: time `pm_test=platform` and
-  `pm_test=processors` by the wall clock, to find the level that has the
-  delay.
+  possible. Linux spends the time, in the `platform` level. Next: a real
+  suspend with `/sys/power/pm_print_times` set to 1, which logs how long
+  each device callback took. Those durations come from a different clock
+  than the log timestamps, so they may be right.
 - Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
