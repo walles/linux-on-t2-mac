@@ -7,10 +7,16 @@ Sorted in priority order. Once something works, move to DONE.
 - Wake up from suspend quickly. Now it takes about 23s, and it's unclear
   whether that time goes to the firmware or to Linux. macOS wakes up
   immediately, so it's possible. See `suspend-notes.md`.
-- Suspend to RAM with the Radeon off. Now it only works with the Radeon on,
-  which costs about 15 W extra while awake. See `suspend-notes.md`.
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane.
+- Suspend to RAM with the Radeon off. Now it only works with the Radeon on,
+  which costs about 15 W extra while awake. See `suspend-notes.md`.
+- If we actually solved any problems, consider where to document those solutions.
+  Also, what would be our top change request for the kernel? Maybe write a ticket
+  for that in the t2linux repo?
+- What would it take for us to fix the ticket we just filed? Can we build only
+  some kernel modules, or do we need to build the whole kernel? Are reboots needed
+  or can we hot swap in the module we just built?
 - Consider the threat model for LUKS. The only thing I could imagine is the
   computer being stolen and possibly examined by an unskilled attacker. Maybe
   they'd boot from their own live USB and try to access data. Then decide on
