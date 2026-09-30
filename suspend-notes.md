@@ -139,6 +139,12 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     - `NHI0._PS0` runs `PCED` and `CTBT`, which does one more `CRMW`
       (register 0x3C). That fits its 2.9s in test 14, and 0.44s + 2 x 2.7s
       fits the bridge's 6.3s.
+19. Same as 18, with the `TbtPEG12` override from `acpi/` installed
+    (`CRMW` tries once, `CIOR` and `CIOW` poll 400 times). The kernel logs
+    `ACPI: Table Upgrade: override [SSDT-APPLE -TbtPEG12]`, revision
+    00001001. `UPSB._PS0` took 0.47s instead of 5.9s: `PCED` 0.44s, and
+    each `CRMW` 18ms, its one `CIOR` still timing out. The whole chain was
+    back up in 0.49s.
 
 ## Conclusions
 
@@ -202,12 +208,10 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Next
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
-  possible. It's the ACPI `CRMW` method timing out in the Thunderbolt
-  controllers' `_PS0` methods (test 18). Ideas:
-  - Override SSDT12 (`TbtPEG12`) with a copy where `CRMW` gives up at once,
-    through the initramfs (`CONFIG_ACPI_TABLE_UPGRADE=y` in this kernel).
-    Since the writes never succeed now anyway, that shouldn't change
-    anything but the time. Test it at runtime with `~/tb-runtime-test.sh`.
+  possible. It was mostly the ACPI `CRMW` method timing out in the
+  Thunderbolt controllers' `_PS0` methods (test 18). The `acpi/` override
+  fixes that at runtime (test 19). Next:
+  - Time a real lid close suspend with `pm_print_times`, like test 14.
   - Report it on t2linux/kernel#30: it probably explains that issue too.
   - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
     resume at the same time. That should save about 9s. It's there from the
