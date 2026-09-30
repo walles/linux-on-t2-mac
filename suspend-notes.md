@@ -62,9 +62,8 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 10. Lid close with `lid-blank-screen` suspending, Radeon on: suspended, and
     opening the lid woke it up. logind and UPower saw the lid open, and the
     screen came back. But waking took about 23s: the lid opened around
-    19:40:00, and the kernel took over at 19:40:23. The kernel's part of the
-    resume took 0.2s, so the rest is before Linux runs. Tests 5 and 6 were the
-    same: `rtcwake -s 30` came back after 56s both times.
+    19:40:00, and the user space was back at 19:40:23. Tests 5 and 6 were
+    the same: `rtcwake -s 30` came back after 56s both times.
 
 ## Conclusions
 
@@ -81,16 +80,49 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
   screen off, if the Radeon is on, the lid is still closed and it isn't
   docked. The Radeon check reads its PCI vendor ID, since `power_state` says
   D3hot, not D3cold, when amdgpu-off has cut its power.
-- Waking takes about 23s, all of it before the kernel resumes.
+- Waking takes about 23s, and we don't know yet whether the firmware or
+  Linux spends it. What we know:
+  - By the wall clock, the time comes after the wake-up trigger. `rtcwake -s
+    30` came back after 56s, not after 30s.
+  - The kernel's own timestamps put a gap of the same size at a different
+    place: between `smpboot: CPU 15 is now offline` and `Freezing user space
+    processes`, on the way into suspend. 23.8s in test 10, 27.6s in tests 5
+    and 6. Everything after that gap, through the resume, looks like it took
+    under 0.25s.
+  - Those timestamps can't be trusted there. In test 3 (`pm_test=devices`,
+    no real S3), the gap was 7.0s, but the 5s `pm_test` wait, which comes
+    after `Freezing user space processes`, doesn't show up after it. So time
+    spent later gets logged at that point. The same could be true for the
+    wake delay.
+  - Without a real S3 (test 3) the extra time was only about 2s. So the delay
+    comes with a real S3 wake: either the firmware, or something Linux does
+    only after one, like bringing the CPUs back up.
+- Others see the same thing on T2 Macs:
+  - [t2linux/kernel#30](https://github.com/t2linux/kernel/issues/30), open: a
+    MacBookPro15,2 on linux-t2 7.2.4 and 7.2.6 has a fixed 22.6s gap in the
+    same place, and waits about 22s for the screen after opening the lid. It
+    blames t2linux/linux-t2-patches#52, "ACPI: x86: Apple T2 systems need
+    early CPU offlining". That patch is what offlines the CPUs before
+    `Freezing user space processes` here too.
+  - [The resume that took a
+    minute](https://kait2en.org/blog/the-resume-that-took-a-minute.html):
+    bringing each CPU back up after S3 took several seconds on T2 Macs, so
+    30s to 90s in all. The fix was offlining the CPUs early, which became
+    the patch above. It also needed `pci=noaer` for a 19.6s EC wait, which
+    doesn't apply here: the EC comes back in 28ms.
 - The Radeon has to be on for suspend to work. Awake, that's about 21 W
   instead of about 7 W, much more than suspend could save. So suspend is only
   worth using with the amdgpu fix below.
 
 ## Next
 
-- Find out why waking takes about 23s. It happens before the kernel gets
-  control, so maybe the firmware or the T2 chip. macOS wakes up immediately,
-  so it's possible.
+- Find out why waking takes about 23s. macOS wakes up immediately, so it's
+  possible. First, find out whether Linux or the firmware spends the time.
+  Ideas:
+  - Take most CPUs offline by hand before `rtcwake -m mem -s 30`. If the
+    delay shrinks, it's the CPU bring-up in Linux.
+  - Time the resume with a clock that the kernel can't mislog, like the
+    keyboard backlight or touch bar coming on compared with the lid opening.
 - Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.

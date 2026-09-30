@@ -4,10 +4,11 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
+- Wake up from suspend quickly. Now it takes about 23s, and it's unclear
+  whether that time goes to the firmware or to Linux. macOS wakes up
+  immediately, so it's possible. See `suspend-notes.md`.
 - Suspend to RAM with the Radeon off. Now it only works with the Radeon on,
   which costs about 15 W extra while awake. See `suspend-notes.md`.
-- Wake up from suspend quickly. Now it takes about 23s before Linux even
-  gets control. macOS wakes up immediately, so it's possible.
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane.
 - Consider the threat model for LUKS. The only thing I could imagine is the
