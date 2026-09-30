@@ -145,6 +145,20 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     00001001. `UPSB._PS0` took 0.47s instead of 5.9s: `PCED` 0.44s, and
     each `CRMW` 18ms, its one `CIOR` still timing out. The whole chain was
     back up in 0.49s.
+20. Lid close with the override and `pm_print_times`, like test 14. Back
+    after about 5s by the user's count. The device resume callbacks took
+    4.0s in all instead of 21.5s, and the suspend ones 2.2s as before. Over
+    0.1s, resume:
+
+    | Device | Test 14 | Now |
+    |---|---|---|
+    | 06:00.0, Thunderbolt 3 bridge | 6.3s | 0.48s |
+    | 7c:00.0, the other Thunderbolt 3 bridge | 6.3s | 0.48s |
+    | 08:00.0 and 7e:00.0, the NHIs | 2.9s each | under 0.1s |
+    | amdgpu (`pci_pm_resume`) | 1.2s | 1.2s |
+    | 00:1c.0, the wifi's root port | 1.0s | 1.0s |
+
+    00:1c.0 also still takes 1.0s to suspend, and amdgpu 0.5s.
 
 ## Conclusions
 
@@ -209,10 +223,11 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
   possible. It was mostly the ACPI `CRMW` method timing out in the
-  Thunderbolt controllers' `_PS0` methods (test 18). The `acpi/` override
-  fixes that at runtime (test 19). Next:
-  - Time a real lid close suspend with `pm_print_times`, like test 14.
+  Thunderbolt controllers' `_PS0` methods (test 18). With the `acpi/`
+  override, waking takes about 5s (test 20). Next:
   - Report it on t2linux/kernel#30: it probably explains that issue too.
+  - What's left: the wifi's root port (1.0s each way), amdgpu (1.2s) and
+    the Thunderbolt link retraining in `PCED` (0.44s per controller).
   - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
     resume at the same time. That should save about 9s. It's there from the
     t2linux setup, but the current t2bce driver may not need it. It could
