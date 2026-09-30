@@ -82,6 +82,21 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     off.
 13. `pm_test=platform`, same as 12: 30.9s by the wall clock, so the delay is
     there too. Wifi died the same way, and the reboot hung the same way.
+14. Lid close with `/sys/power/pm_print_times` set to 1. Wifi survived. The
+    device resume callbacks took 21.5s in all, and the suspend ones 2.2s.
+    The slow resume callbacks, all `pci_pm_resume_noirq` except amdgpu's:
+
+    | Device | Resume |
+    |---|---|
+    | 06:00.0, Thunderbolt 3 bridge, upstream port | 6.3s |
+    | 7c:00.0, the other Thunderbolt 3 bridge | 6.3s |
+    | 08:00.0, Thunderbolt 3 NHI | 2.9s |
+    | 7e:00.0, the other Thunderbolt 3 NHI | 2.9s |
+    | amdgpu (`pci_pm_resume`) | 1.2s |
+    | 00:1c.0, the wifi's root port | 1.0s |
+
+    That's 20.6s, run one at a time because of `pm_async=off`. 00:1c.0
+    also took 1.0s to suspend. No messages explain the waits.
 
 ## Conclusions
 
@@ -116,8 +131,9 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     delay (test 12), and it stops before the real sleep. With
     `pm_test=devices` (test 3) the extra time was only about 2s. So the
     delay comes from the `platform` level (test 13): the late and noirq
-    device callbacks, like amdgpu's mode1 reset and its resume after that,
-    and the ACPI `_PTS` and `_WAK` methods.
+    device callbacks, and the ACPI `_PTS` and `_WAK` methods.
+  - It's the noirq resume of the two Thunderbolt 3 controllers (test 14):
+    18.4s. With `pm_async=off` the kernel runs them one after the other.
   - It's not bringing the CPUs back up (test 11), and not the early CPU
     offlining either: the gap is just as long without it.
 - Others see the same thing on T2 Macs:
@@ -140,10 +156,14 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Next
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
-  possible. Linux spends the time, in the `platform` level. Next: a real
-  suspend with `/sys/power/pm_print_times` set to 1, which logs how long
-  each device callback took. Those durations come from a different clock
-  than the log timestamps, so they may be right.
+  possible. It's mostly the Thunderbolt 3 controllers' noirq resume.
+  Ideas:
+  - Find out what they wait for, 6.3s and 2.9s each. Maybe ACPI power-on
+    methods, or waiting for links to empty ports.
+  - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
+    resume at the same time. That should save about 9s. It's there from the
+    t2linux setup, but the current t2bce driver may not need it. It could
+    change the i915 and gmux resume order.
 - Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
