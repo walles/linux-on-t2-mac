@@ -4,9 +4,6 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Wake up from suspend quickly. Now it takes about 5s, down from 23s with
-  the Thunderbolt ACPI fix in `acpi/`. macOS wakes up immediately, so it's
-  possible. See `suspend-notes.md`.
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane.
 - Suspend to RAM with the Radeon off. Now it only works with the Radeon on,
@@ -29,6 +26,9 @@ Sorted in priority order. Once something works, move to DONE.
   - `files/usr/local/bin/lid-blank-screen` turns the screen off and then
     suspends, but only with the Radeon on. The screen has to be off before
     suspending, otherwise it stays black after the resume.
+- Wake up from suspend quickly. Takes about 5s now, down from 23s.
+  - Fixed by the Thunderbolt ACPI table override in `acpi/`, installed by
+    `install-fixes.sh`. See `suspend-notes.md`.
 - GNOME thinks I have a mouse, not a trackpad. Can't two finger scroll or
   two-finger click for right click. GNOME settings say nothing about
   trackpads.
