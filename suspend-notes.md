@@ -72,6 +72,13 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     stayed black, since the screen wasn't turned off first. The kernel's
     timestamps put the gap, 27.7s, between `Filesystems sync` and `Freezing
     user space processes` this time, since there was no early CPU offlining.
+12. `pm_test=core` with the screen off first: writes `mem` to
+    `/sys/power/state`, runs everything but the real sleep and the firmware
+    wake, and waits 5s. It took 29.9s by the wall clock, so about 25s extra
+    without the firmware being involved. The screen came back, but wifi
+    didn't: `brcmfmac: Unable to change power state from D3cold to D0`, and
+    probing it again failed. Maybe because there was no real S3 to power it
+    back up. A reboot fixed it.
 
 ## Conclusions
 
@@ -102,9 +109,13 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     after `Freezing user space processes`, doesn't show up after it. So time
     spent later gets logged at that point. The same could be true for the
     wake delay.
-  - Without a real S3 (test 3) the extra time was only about 2s. So the delay
-    comes with a real S3 wake: either the firmware, or something Linux does
-    only after one.
+  - Linux spends the time, not the firmware: `pm_test=core` has the same
+    delay (test 12), and it stops before the real sleep. With
+    `pm_test=devices` (test 3) the extra time was only about 2s. So the
+    delay comes from the levels in between: `platform` (the noirq device
+    callbacks and the ACPI `_PTS` and `_WAK` methods), `processors` (taking
+    the CPUs offline, already done early here) or `core` (the syscore
+    callbacks).
   - It's not bringing the CPUs back up (test 11), and not the early CPU
     offlining either: the gap is just as long without it.
 - Others see the same thing on T2 Macs:
@@ -127,12 +138,9 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Next
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
-  possible. First, find out whether Linux or the firmware spends the time.
-  Idea: run `rtcwake -m mem -s 30` with `/sys/power/pm_test` set to
-  `platform`, then `processors`, then `core`, timed by the wall clock. `core`
-  runs everything except the real sleep and the firmware wake. If the delay
-  shows up at some level, Linux or the ACPI code it runs spends it. If not
-  even at `core`, the time goes to the firmware.
+  possible. Linux spends the time. Next: time `pm_test=platform` and
+  `pm_test=processors` by the wall clock, to find the level that has the
+  delay.
 - Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
