@@ -64,6 +64,14 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     screen came back. But waking took about 23s: the lid opened around
     19:40:00, and the user space was back at 19:40:23. Tests 5 and 6 were
     the same: `rtcwake -s 30` came back after 56s both times.
+11. All CPUs but CPU 0 offline by hand, then `rtcwake -m mem -s 30`, then the
+    CPUs back online. The touch bar and keyboard backlight came back after 55s
+    by hand timing, and the kernel says 55.4s from `suspend entry` to
+    `suspend exit`. So the delay is the same, and bringing the CPUs back up
+    isn't it: that happened only after `suspend exit` here. The screen
+    stayed black, since the screen wasn't turned off first. The kernel's
+    timestamps put the gap, 27.7s, between `Filesystems sync` and `Freezing
+    user space processes` this time, since there was no early CPU offlining.
 
 ## Conclusions
 
@@ -96,7 +104,9 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     wake delay.
   - Without a real S3 (test 3) the extra time was only about 2s. So the delay
     comes with a real S3 wake: either the firmware, or something Linux does
-    only after one, like bringing the CPUs back up.
+    only after one.
+  - It's not bringing the CPUs back up (test 11), and not the early CPU
+    offlining either: the gap is just as long without it.
 - Others see the same thing on T2 Macs:
   - [t2linux/kernel#30](https://github.com/t2linux/kernel/issues/30), open: a
     MacBookPro15,2 on linux-t2 7.2.4 and 7.2.6 has a fixed 22.6s gap in the
@@ -118,11 +128,11 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
   possible. First, find out whether Linux or the firmware spends the time.
-  Ideas:
-  - Take most CPUs offline by hand before `rtcwake -m mem -s 30`. If the
-    delay shrinks, it's the CPU bring-up in Linux.
-  - Time the resume with a clock that the kernel can't mislog, like the
-    keyboard backlight or touch bar coming on compared with the lid opening.
+  Idea: run `rtcwake -m mem -s 30` with `/sys/power/pm_test` set to
+  `platform`, then `processors`, then `core`, timed by the wall clock. `core`
+  runs everything except the real sleep and the firmware wake. If the delay
+  shows up at some level, Linux or the ACPI code it runs spends it. If not
+  even at `core`, the time goes to the firmware.
 - Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
