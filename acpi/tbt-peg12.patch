@@ -1,0 +1,81 @@
+--- SSDT12.dsl
++++ tbt-peg12.dsl
+@@ -18,7 +18,7 @@
+  *     Compiler ID      "INTL"
+  *     Compiler Version 0x20160930 (538315056)
+  */
+-DefinitionBlock ("", "SSDT", 2, "APPLE ", "TbtPEG12", 0x00001000)
++DefinitionBlock ("", "SSDT", 2, "APPLE ", "TbtPEG12", 0x00001001)
+ {
+     External (_SB_.GGDV, MethodObj)    // 1 Arguments
+     External (_SB_.GGIV, MethodObj)    // 1 Arguments
+@@ -2270,7 +2270,7 @@
+                     TMOT = Zero
+                     PROG = One
+                     Local1 = One
+-                    Local0 = 0x2710
++                    Local0 = 0x0190
+                     While ((Zero < Local0))
+                     {
+                         If ((PROG == Zero))
+@@ -2303,7 +2303,7 @@
+                     TMOT = Zero
+                     PROG = One
+                     Local1 = One
+-                    Local0 = 0x2710
++                    Local0 = 0x0190
+                     While ((Zero < Local0))
+                     {
+                         If ((PROG == Zero))
+@@ -2348,7 +2348,7 @@
+                             (\_SB.PCI0.PEG1.UPSB.AVND != 0xFFFFFFFF)))
+                         {
+                             Local3 = Zero
+-                            While ((Local3 <= 0x04))
++                            While ((Local3 <= Zero))
+                             {
+                                 Local2 = CIOR (Arg0, Arg1, Arg2)
+                                 If ((DerefOf (Local2 [Zero]) == Zero))
+@@ -2374,7 +2374,6 @@
+                                 }
+ 
+                                 Local3++
+-                                Sleep (0x64)
+                             }
+                         }
+                     }
+@@ -9026,7 +9025,7 @@
+                     TMOT = Zero
+                     PROG = One
+                     Local1 = One
+-                    Local0 = 0x2710
++                    Local0 = 0x0190
+                     While ((Zero < Local0))
+                     {
+                         If ((PROG == Zero))
+@@ -9059,7 +9058,7 @@
+                     TMOT = Zero
+                     PROG = One
+                     Local1 = One
+-                    Local0 = 0x2710
++                    Local0 = 0x0190
+                     While ((Zero < Local0))
+                     {
+                         If ((PROG == Zero))
+@@ -9104,7 +9103,7 @@
+                             (\_SB.PCI0.PEG2.UPSB.AVND != 0xFFFFFFFF)))
+                         {
+                             Local3 = Zero
+-                            While ((Local3 <= 0x04))
++                            While ((Local3 <= Zero))
+                             {
+                                 Local2 = CIOR (Arg0, Arg1, Arg2)
+                                 If ((DerefOf (Local2 [Zero]) == Zero))
+@@ -9130,7 +9129,6 @@
+                                 }
+ 
+                                 Local3++
+-                                Sleep (0x64)
+                             }
+                         }
+                     }

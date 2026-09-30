@@ -1,6 +1,6 @@
 #!/bin/bash
-# Install the trackpad and USB-C hotplug fixes from files/, then rebuild the
-# initramfs. Run with: sudo ./install-fixes.sh
+# Install the trackpad, USB-C hotplug and Thunderbolt ACPI fixes from files/,
+# then rebuild the initramfs. Run with: sudo ./install-fixes.sh
 set -euo pipefail
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -20,6 +20,9 @@ fi
 
 install -v -m644 etc/dracut.conf.d/89-t2-trackpad.conf /etc/dracut.conf.d/
 install -v -m644 etc/udev/rules.d/90-t2-usbc-hotplug.rules /etc/udev/rules.d/
+install -v -m644 etc/dracut.conf.d/92-t2-acpi-override.conf /etc/dracut.conf.d/
+install -v -D -m644 usr/local/lib/acpi-override/tbt-peg12.aml \
+    /usr/local/lib/acpi-override/tbt-peg12.aml
 
 # Keep the first backup; don't overwrite a known-good one on re-runs
 if [ ! -e "$INITRD.bak" ]; then
@@ -27,6 +30,13 @@ if [ ! -e "$INITRD.bak" ]; then
 fi
 
 dracut --force --kver "$KVER"
+
+# The kernel only picks up ACPI tables from the early, uncompressed part
+if ! lsinitrd "$INITRD" | grep -q 'kernel/firmware/acpi/tbt-peg12.aml'; then
+    echo "PROBLEM: tbt-peg12.aml is not in $INITRD" >&2
+    echo "Old initramfs is at $INITRD.bak" >&2
+    exit 1
+fi
 
 # bcm5974 must be force-loaded before apple_bce brings up the internal USB bus
 echo
