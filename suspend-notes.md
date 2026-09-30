@@ -125,7 +125,20 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     then wakes the xHCI and rescans for the NHI. Waking the xHCI and its
     bridges took 5.9s, so the slow power-up happens without any suspend
     too. The rescan took 0.05s. The ACPI method trace logged nothing: the
-    path has to be `\_SB_.PCI0...`, with the underscore padding.
+    path has to be `\_SB_.PCI0...`, with the underscore padding. (Wrong:
+    test 18 shows the tracer uses `\_SB.PCI0...`, so the reason is unknown.)
+18. Same as 17, with ACPI tracing of all methods (`trace_state` `enable`)
+    while waking up. `UPSB._PS0` took 5.9s:
+    - `PCED`, the link retraining: 0.44s.
+    - Then two `CRMW` calls, 2.7s each. `CRMW` does a read-modify-write of
+      a Thunderbolt switch register (0x150 and 0x250, setting bit 26)
+      through a mailbox in the bridge's PCI config space (`CIOR`, `CIOW`).
+      Every `CIOR` timed out: it polls up to 10000 times with `Stall (25)`
+      (0.44s in practice), and `CRMW` tries 5 times with `Sleep (100)`
+      between. So the write never happens, it just costs 2.7s.
+    - `NHI0._PS0` runs `PCED` and `CTBT`, which does one more `CRMW`
+      (register 0x3C). That fits its 2.9s in test 14, and 0.44s + 2 x 2.7s
+      fits the bridge's 6.3s.
 
 ## Conclusions
 
@@ -163,6 +176,10 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     device callbacks, and the ACPI `_PTS` and `_WAK` methods.
   - It's the noirq resume of the two Thunderbolt 3 controllers (test 14):
     18.4s. With `pm_async=off` the kernel runs them one after the other.
+  - Almost all of that is the ACPI `CRMW` method timing out, 2.7s per
+    call, three calls per controller (test 18). The mailbox it uses never
+    answers. Maybe on macOS it does, because its Thunderbolt driver is up,
+    or macOS never gets there.
   - It's not bringing the CPUs back up (test 11), and not the early CPU
     offlining either: the gap is just as long without it.
 - Others see the same thing on T2 Macs:
@@ -185,11 +202,13 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Next
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
-  possible. It's mostly the Thunderbolt 3 controllers' noirq resume,
-  probably in their ACPI `_PS0` methods (test 16). Ideas:
-  - Trace which parts of `PCED` run, with ACPI method tracing
-    (`/sys/module/acpi/parameters/trace_method_name`). That logs the AML as
-    it runs, without patching kernel code like ftrace does.
+  possible. It's the ACPI `CRMW` method timing out in the Thunderbolt
+  controllers' `_PS0` methods (test 18). Ideas:
+  - Override SSDT12 (`TbtPEG12`) with a copy where `CRMW` gives up at once,
+    through the initramfs (`CONFIG_ACPI_TABLE_UPGRADE=y` in this kernel).
+    Since the writes never succeed now anyway, that shouldn't change
+    anything but the time. Test it at runtime with `~/tb-runtime-test.sh`.
+  - Report it on t2linux/kernel#30: it probably explains that issue too.
   - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
     resume at the same time. That should save about 9s. It's there from the
     t2linux setup, but the current t2bce driver may not need it. It could
