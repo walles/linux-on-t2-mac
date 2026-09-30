@@ -225,7 +225,17 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
   possible. It was mostly the ACPI `CRMW` method timing out in the
   Thunderbolt controllers' `_PS0` methods (test 18). With the `acpi/`
   override, waking takes about 5s (test 20). Next:
-  - Report it on t2linux/kernel#30: it probably explains that issue too.
+  - Why the mailbox never answers: on t2linux/kernel#30, someone with a
+    MacBookPro16,1 traced it to an ACPICA bug. ACPICA takes a PCI bridge's
+    bus number from the bridge's own primary bus register, which reads 0
+    right after D3cold, so the Thunderbolt bridge's `PCI_Config` region
+    gets cached as 00:00.0 and the mailbox commands go to the wrong device.
+    Their fix, [open-acpica/acpica#1236](https://github.com/open-acpica/acpica/pull/1236),
+    was closed unmerged, with a t2linux maintainer saying the Apple
+    Thunderbolt ACPI paths need reverse engineering first. They got resume
+    from about 22.5s to 6.2s with it, and to 1.2–2.4s with more patches.
+    The `acpi/` override is a workaround for the same thing: the mailbox
+    commands still go to the wrong device, just fewer of them.
   - What's left: the wifi's root port (1.0s each way), amdgpu (1.2s) and
     the Thunderbolt link retraining in `PCED` (0.44s per controller).
   - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
