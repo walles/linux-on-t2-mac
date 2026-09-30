@@ -103,6 +103,21 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     ends at `PM: suspend entry`. `set_graph_function` only limits what gets
     recorded, all kernel functions still get the tracing hook, maybe also
     in code that can't take it during suspend.
+16. Read the ACPI tables (`acpica-tools`, tables from
+    `/sys/firmware/acpi/tables`). The Thunderbolt code is in SSDT12, for
+    `\_SB.PCI0.PEG1` (00:01.1) and `\_SB.PCI0.PEG2` (00:01.2). Linux says
+    yes to `_OSI("Darwin")` on Apple hardware, so it gets the macOS code
+    paths (`OSDW ()`):
+    - `UPSB._PS0` (the bridges, 06:00.0 and 7c:00.0, 6.3s each) and
+      `NHI0._PS0` (2.9s each) both run `PCED`. It retrains the PCIe link to
+      the controller and waits for it, in loops with 1s timeouts and sleeps
+      of 120ms and 250ms. If the link isn't x4 or the controller doesn't
+      answer, it retries, up to `LWMR` (20) times.
+    - `UPSB` has methods `SLMR` and `SFLG` that set the retry limit and
+      flags to skip the checks. Nothing in the tables calls them, so
+      they're probably for the macOS Thunderbolt driver.
+    - The links are x4 at 8 GT/s now, so it's unclear which waits take the
+      time.
 
 ## Conclusions
 
@@ -162,10 +177,11 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Next
 
 - Find out why waking takes about 23s. macOS wakes up immediately, so it's
-  possible. It's mostly the Thunderbolt 3 controllers' noirq resume.
-  Ideas:
-  - Find out what they wait for, 6.3s and 2.9s each. Maybe ACPI power-on
-    methods, or waiting for links to empty ports.
+  possible. It's mostly the Thunderbolt 3 controllers' noirq resume,
+  probably in their ACPI `_PS0` methods (test 16). Ideas:
+  - Trace which parts of `PCED` run, with ACPI method tracing
+    (`/sys/module/acpi/parameters/trace_method_name`). That logs the AML as
+    it runs, without patching kernel code like ftrace does.
   - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
     resume at the same time. That should save about 9s. It's there from the
     t2linux setup, but the current t2bce driver may not need it. It could
