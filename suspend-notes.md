@@ -118,6 +118,14 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
       they're probably for the macOS Thunderbolt driver.
     - The links are x4 at 8 GT/s now, so it's unclear which waits take the
       time.
+17. Powering the first Thunderbolt chain down and up at runtime, without
+    suspending, with `~/tb-runtime-test.sh`. The NHI (08:00.0) stays awake
+    with or without its driver bound, so the script removes it, lets the
+    xHCI (09:00.0) runtime suspend, waits for the whole chain to go to D3,
+    then wakes the xHCI and rescans for the NHI. Waking the xHCI and its
+    bridges took 5.9s, so the slow power-up happens without any suspend
+    too. The rescan took 0.05s. The ACPI method trace logged nothing: the
+    path has to be `\_SB_.PCI0...`, with the underscore padding.
 
 ## Conclusions
 
