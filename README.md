@@ -4,8 +4,6 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Get a terminal program that can do split panes. And can search in the
-  infinite scrollback buffer of each tab / pane.
 - Suspend to RAM with the Radeon off. Now it only works with the Radeon on,
   which costs about 15 W extra while awake. See `suspend-notes.md`.
 - If we actually solved any problems, consider where to document those solutions.
@@ -18,6 +16,7 @@ Sorted in priority order. Once something works, move to DONE.
   computer being stolen and possibly examined by an unskilled attacker. Maybe
   they'd boot from their own live USB and try to access data. Then decide on
   where to go, dummy password like now or a real one?
+- Proper quick wakeup: https://github.com/open-acpica/acpica/pull/1236
 
 # DONE
 
@@ -40,6 +39,12 @@ Sorted in priority order. Once something works, move to DONE.
     xHCI controllers runtime-suspended and never woke on plug-in, since Apple
     firmware lacks the ACPI links for that. Now they're kept powered on.
 - Both installed with `sudo ./install-fixes.sh`.
+- Get a terminal program that can do split panes. And can search in the
+  infinite scrollback buffer of each tab / pane. No terminal multiplexer.
+  - Ghostty (`apt install ghostty`). `~/.config/ghostty/config.ghostty` sets
+    `scrollback-limit = 1000000000`, 1 GB per pane, allocated lazily. Truly
+    unlimited scrollback isn't supported by Ghostty yet, maintainer comment:
+    https://github.com/ghostty-org/ghostty/discussions/8593
 - Install vscode, set as default editor
 - Want to be able to close lid and open it again after a minute. Computer
   should be alive and healthy with keyboard, wifi and things working.
