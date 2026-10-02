@@ -7,9 +7,15 @@ Sorted in priority order. Once something works, move to DONE.
 - Can we get the right command button to act like ctrl, unless if it's single
   clicked (then it should bring up the GNOME thingy) or on command-tab, then it
   should act like command (switch apps).
+- Can we get the GNOME clock to show seconds?
+- Doing `git commit` brings up a notification saying VSCode is ready, and VSCode
+  shows up behind some other windows. Can we make the window move to the front
+  in this case?
 - Redo ~/src/twin's has-arrow-keys-emulation detection based on that Windows
   Terminal person's suggestion. This should make PTYXIS work OOTB, and we need
   to regression test it against whatever else we have.
+- Firefox seems to lose its session on shutdown and brings up the troubleshooting
+  page on the next boot. Can we make it shut down nicely instead?
 - Consider the threat model for LUKS. The only thing I could imagine is the
   computer being stolen and possibly examined by an unskilled attacker. Maybe
   they'd boot from their own live USB and try to access data. Then decide on
