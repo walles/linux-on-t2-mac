@@ -242,7 +242,7 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     resume at the same time. That should save about 9s. It's there from the
     t2linux setup, but the current t2bce driver may not need it. It could
     change the i915 and gmux resume order.
-- Measure the power use in suspend: `~/suspend-measure.sh`, an hour asleep.
+- Measure the power use in suspend: `suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
 - Optional kernel fix: a device link from i915 to apple_gmux, so gmux resumes
