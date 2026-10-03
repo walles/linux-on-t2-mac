@@ -67,8 +67,20 @@ set_power_save 3
 sleep 2
 rtcwake -m mem -s "$SECONDS_ASLEEP"
 STATUS=$?
+
+# Right after the resume, the battery still reports the values from before
+# the suspend. Wait for them to change, at most 60s.
+STALE="$(battery | cut -d' ' -f2-) $(context)"
+WAITED=0
+while [ "$(battery | cut -d' ' -f2-) $(context)" = "$STALE" ] &&
+  [ "$WAITED" -lt 60 ]; do
+  sleep 1
+  WAITED=$((WAITED + 1))
+done
+
 AFTER=$(battery)
-log "after: $AFTER $(context), rtcwake exit status $STATUS"
+log "after: $AFTER $(context), rtcwake exit status $STATUS," \
+  "waited ${WAITED}s for new battery values"
 set_power_save 0
 
 # Use the average voltage for the energy. Less than 95% of the planned time
