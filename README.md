@@ -4,9 +4,6 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Can we get the right command button to act like ctrl, unless if it's single
-  clicked (then it should bring up the GNOME thingy) or on command-tab, then it
-  should act like command (switch apps).
 - Redo ~/src/twin's has-arrow-keys-emulation detection based on that Windows
   Terminal person's suggestion. This should make PTYXIS work OOTB, and we need
   to regression test it against whatever else we have. Skip as much per-terminal
@@ -31,6 +28,9 @@ Sorted in priority order. Once something works, move to DONE.
 
 # DONE
 
+- Make both Cmd keys act as Ctrl, while keeping Cmd-Tab for switching apps and
+  single / double tap of right Cmd for the overview / desktop picker. Setup in
+  `keyboard-mappings.md`.
 - Can we get the GNOME clock to show seconds?
 - Suspend to RAM on lid close. And wake back up on lid open with everything
   working. Specifically, keyboard, trackpad, wifi, touch bar.
