@@ -1,9 +1,10 @@
 #!/bin/sh
 # Measure power use in suspend to RAM: battery charge before and after some
-# hours asleep, 8 by default. The screen is turned off first and on after, like
-# on lid close.
+# minutes asleep, 8 hours by default. The screen is turned off first and on
+# after, like on lid close.
 #
-# Run unplugged, with the lid open: sudo sh ./suspend-measure.sh [hours]
+# Run unplugged, with the lid open: sudo sh ./suspend-measure.sh [minutes]
+# Try 1 minute first, to see that it wakes up. That result means nothing.
 # Results are appended to ~/suspend-measure.log, synced after every line, so
 # they survive the battery running out.
 #
@@ -13,8 +14,8 @@
 
 B=/sys/class/power_supply/BAT0
 LOG=/home/johan/suspend-measure.log
-HOURS=${1:-8}
-SECONDS_ASLEEP=$((HOURS * 3600))
+MINUTES=${1:-480}
+SECONDS_ASLEEP=$((MINUTES * 60))
 
 log() {
   echo "$*" | tee -a "$LOG"
@@ -58,7 +59,7 @@ fi
 touch "$LOG"
 chown johan: "$LOG"
 
-log "=== $(date '+%F %T'), $(uname -r), asleep for ${HOURS}h"
+log "=== $(date '+%F %T'), $(uname -r), asleep for ${MINUTES} min"
 BEFORE=$(battery)
 log "before: $BEFORE $(context)"
 
