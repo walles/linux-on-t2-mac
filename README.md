@@ -10,7 +10,6 @@ Sorted in priority order. Once something works, move to DONE.
   logic as possible.
 - Firefox seems to lose its session on shutdown and brings up the troubleshooting
   page on the next boot. Can we make it shut down nicely instead?
-- Consider focus-follows-mouse with auto-raise. I used to love that when I had it!
 - Consider the threat model for LUKS. The only thing I could imagine is the
   computer being stolen and possibly examined by an unskilled attacker. Maybe
   they'd boot from their own live USB and try to access data. Then decide on
@@ -28,6 +27,8 @@ Sorted in priority order. Once something works, move to DONE.
 
 # DONE
 
+- Consider focus-follows-mouse with auto-raise. Tried it, didn't pan out, back
+  to click-to-focus. Notes in `focus-follows-mouse.md`.
 - Make both Cmd keys act as Ctrl, while keeping Cmd-Tab for switching apps and
   single / double tap of right Cmd for the overview / desktop picker. Setup in
   `keyboard-mappings.md`.
