@@ -159,6 +159,12 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     | 00:1c.0, the wifi's root port | 1.0s | 1.0s |
 
     00:1c.0 also still takes 1.0s to suspend, and amdgpu 0.5s.
+21. `suspend-measure.sh`, 8h in S3 with the Radeon on, unplugged: 345 mAh,
+    4.18 Wh, so about 0.52 W. The battery went from 76% to 72%. A full
+    battery would last about a week like that. The battery gauge can be off by
+    tens of mAh after a long rest, so maybe ±10%. A 1 minute test run first
+    showed that right after the resume the battery can report the values from
+    before the suspend, so the script waits for them to change.
 
 ## Conclusions
 
@@ -216,8 +222,11 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     the patch above. It also needed `pci=noaer` for a 19.6s EC wait, which
     doesn't apply here: the EC comes back in 28ms.
 - The Radeon has to be on for suspend to work. Awake, that's about 21 W
-  instead of about 7 W, much more than suspend could save. So suspend is only
-  worth using with the amdgpu fix below.
+  instead of about 7 W.
+- Suspend uses about 0.52 W, with the Radeon on (test 21). That's about 2%
+  of being awake with the Radeon on, so suspending when not using the machine
+  is worth it even before the amdgpu fix. Hibernating could save at most
+  that 0.52 W, about 4 Wh per night.
 
 ## Next
 
@@ -242,7 +251,6 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     resume at the same time. That should save about 9s. It's there from the
     t2linux setup, but the current t2bce driver may not need it. It could
     change the i915 and gmux resume order.
-- Measure the power use in suspend: `suspend-measure.sh`, an hour asleep.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
 - Optional kernel fix: a device link from i915 to apple_gmux, so gmux resumes
