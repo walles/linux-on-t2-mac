@@ -2,3 +2,15 @@
 // 50unattended-upgrades. The minimum battery level is checked by the
 // apt-daily*.service.d/on-battery.conf drop-ins instead.
 Unattended-Upgrade::OnlyOnACPower "false";
+
+// Also upgrade Ubuntu's regular bug fixes, not just security fixes. Appends to
+// the list from 50unattended-upgrades.
+Unattended-Upgrade::Allowed-Origins {
+        "${distro_id}:${distro_codename}-updates";
+};
+
+// And VS Code. The T2 kernel repo is left out on purpose, new kernels need the
+// initramfs checks before rebooting.
+Unattended-Upgrade::Origins-Pattern {
+        "site=packages.microsoft.com,origin=code stable";
+};

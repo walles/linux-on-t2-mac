@@ -21,7 +21,8 @@ Stock Ubuntu already has this set up:
   or suspended happens soon after the next boot or resume. That covers the "no
   fixed uptime" part.
 - Only the Ubuntu release and `-security` pockets are upgraded automatically.
-  `-updates`, the T2 kernel repo and VS Code still need a manual `apt upgrade`.
+  `-updates`, the T2 kernel repo and VS Code are left to the Software Updater
+  (Programuppdaterare), which asks first.
 
 ## The problem
 
@@ -70,7 +71,9 @@ when online. Retry whenever we get online.
   Automatic upgrades would then silently stop until a manual
   `sudo dpkg --configure -a`.
 - `files/etc/apt/apt.conf.d/51unattended-upgrades-on-battery` turns off
-  `OnlyOnACPower`. It has to sort after `50unattended-upgrades`.
+  `OnlyOnACPower`. It has to sort after `50unattended-upgrades`. It also adds
+  `-updates` and the VS Code repo to what gets upgraded automatically. Lists
+  in apt config append, so the stock origins stay.
 - `files/etc/NetworkManager/dispatcher.d/90-apt-daily` starts both services
   when an interface comes up, or connectivity becomes full. The timers often
   fire right after resume, before the wifi is back, and then get skipped by the
@@ -175,12 +178,14 @@ directories, then running `sudo systemctl daemon-reload`.
   `tbt-peg12.aml`, and the second should list `bcm5974` before `t2bce_vhci`:
   `sudo lsinitrd /boot/initrd.img-$(uname -r) | grep tbt-peg12.aml`
   `sudo lsinitrd -f etc/cmdline.d/20-force_drivers.conf /boot/initrd.img-$(uname -r)`
-- The T2 kernel repo isn't in `Allowed-Origins`, so kernels are never
-  upgraded automatically. No automatic reboots either, `Automatic-Reboot`
+- The T2 kernel repo isn't in the allowed origins, so kernels are never
+  upgraded automatically, the Software Updater still offers them. No automatic reboots either, `Automatic-Reboot`
   defaults to false.
 - Getting online fires the hook twice, once for `up` and once for
   `connectivity-change`. The second start can begin `apt-daily` while
   `apt-daily-upgrade` is already running. Harmless, `apt.systemd.daily`
   serializes them on `/var/lib/apt/daily_lock`.
+- VS Code can get upgraded while it's running. Restart it if it acts up
+  afterwards.
 - BAT0 is hard coded. If it's missing, runs on battery are skipped.
 - The threshold is hard coded to 30% in both drop-ins.
