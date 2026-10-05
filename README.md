@@ -27,6 +27,11 @@ Sorted in priority order. Once something works, move to DONE.
 
 # DONE
 
+- Daily automatic upgrades. Ubuntu's `unattended-upgrades` skipped every run
+  because the machine is always on battery. Now runs on battery when above
+  30%, and retries when getting online. See `auto-upgrades.md`.
+- Make "Generating locales" faster by removing unused language packs. Notes in
+  `locales.md`.
 - Consider focus-follows-mouse with auto-raise. Tried it, didn't pan out, back
   to click-to-focus. Notes in `focus-follows-mouse.md`.
 - Make both Cmd keys act as Ctrl, while keeping Cmd-Tab for switching apps and

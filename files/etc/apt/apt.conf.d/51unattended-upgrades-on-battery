@@ -1,0 +1,4 @@
+// This laptop is always on battery while in use. Overrides the default from
+// 50unattended-upgrades. The minimum battery level is checked by the
+// apt-daily*.service.d/on-battery.conf drop-ins instead.
+Unattended-Upgrade::OnlyOnACPower "false";

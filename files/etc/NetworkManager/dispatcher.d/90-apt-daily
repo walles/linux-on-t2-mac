@@ -1,0 +1,15 @@
+#!/bin/sh
+# Retry the daily apt runs when we get online. The timers often fire right
+# after resume, before the wifi is back, and then the next try would be the
+# next day.
+#
+# Starting these often is harmless: apt.systemd.daily only does each step once
+# per day, and the battery check in the on-battery.conf drop-ins still applies.
+
+case "$2" in
+    up) ;;
+    connectivity-change) [ "$CONNECTIVITY_STATE" = FULL ] || exit 0 ;;
+    *) exit 0 ;;
+esac
+
+/usr/bin/systemctl start --no-block apt-daily.service apt-daily-upgrade.service
