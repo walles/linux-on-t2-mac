@@ -6,6 +6,10 @@ Sorted in priority order. Once something works, move to DONE.
 
 - Firefox seems to lose its session on shutdown and brings up the troubleshooting
   page on the next boot. Can we make it shut down nicely instead?
+- Retry focus-follows-mouse with auto-raise once mutter `50.1-0ubuntu2.5`
+  reaches `resolute-updates`. First try failed since focus jumped back to the
+  window under the pointer after Cmd-Tab, a mutter bug fixed in that version.
+  See `focus-follows-mouse.md`.
 - Consider the threat model for LUKS. The only thing I could imagine is the
   computer being stolen and possibly examined by an unskilled attacker. Maybe
   they'd boot from their own live USB and try to access data. Then decide on
@@ -40,8 +44,6 @@ Sorted in priority order. Once something works, move to DONE.
   30%, and retries when getting online. See `auto-upgrades.md`.
 - Make "Generating locales" faster by removing unused language packs. Notes in
   `locales.md`.
-- Consider focus-follows-mouse with auto-raise. Tried it, didn't pan out, back
-  to click-to-focus. Notes in `focus-follows-mouse.md`.
 - Make both Cmd keys act as Ctrl, while keeping Cmd-Tab for switching apps and
   single / double tap of right Cmd for the overview / desktop picker. Setup in
   `keyboard-mappings.md`.
