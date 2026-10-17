@@ -166,8 +166,11 @@ backlight can't go below ~17% in steady light. Verified 2026-10-17: turning
 auto-brightness on with the slider at 6% gave 22.7% (66.7 + 6 − 50), and the
 slider all the way left gave 15.5–17.1%. In those seconds a 2% change in the
 reading moved the backlight by 10%, since Shell's bias turns small changes in
-the target into big relative changes at low backlight. That's a Shell-side
-problem, separate from the gsd smoothing.
+the target into big relative changes at low backlight. Same in the plain
+GNOME session without Ubuntu's extensions: starting at 1% gave 17.5–18.3%,
+and the slider all the way left gave 17.2–18.5%. That's a Shell-side
+problem, separate from the gsd smoothing, reported as
+[gnome-shell #9488](https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/9488).
 
 Working notes, scripts and data are in `EXPERIMENT-REMOVE-THIS/NOTES.md`.
 
