@@ -1,0 +1,357 @@
+<title>Auto-Brightness Walk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; summary table, then the two-panel chart on a shared time axis, then the detail table. */
+:root {
+  --page: #f6f6f3;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #7d7b75;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --ring: rgba(11, 11, 11, 0.10);
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --stay: rgba(11, 11, 11, 0.035);
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0f0f0e; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
+    --muted: #8f8d86; --grid: #2c2c2a; --axis: #45453f; --ring: rgba(255, 255, 255, 0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --stay: rgba(255, 255, 255, 0.04);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0f0f0e; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
+  --muted: #8f8d86; --grid: #2c2c2a; --axis: #45453f; --ring: rgba(255, 255, 255, 0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --stay: rgba(255, 255, 255, 0.04);
+  color-scheme: dark;
+}
+body {
+  background: var(--page);
+  color: var(--ink);
+  font: 15px/1.55 var(--font-body);
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 28px;
+}
+h1, h2 { text-wrap: balance; margin: 0; font-weight: 600; }
+h1 { font-size: 28px; line-height: 1.2; letter-spacing: -0.01em; }
+h2 { font-size: 18px; }
+p { margin: 0; max-width: 68ch; }
+.lead { color: var(--ink-2); display: grid; gap: 10px; }
+.eyebrow {
+  font: 500 12px/1 var(--font-data);
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+section { display: grid; gap: 12px; min-width: 0; }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--ring);
+  border-radius: 6px;
+  padding: 16px;
+  min-width: 0;
+}
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { font-weight: 500; color: var(--ink-2); font-size: 13px; }
+td.num, th.num { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.key { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.swatch { width: 14px; height: 3px; border-radius: 2px; flex: none; }
+.sub { color: var(--muted); font-size: 12px; display: block; white-space: normal; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--ink-2); }
+.legend .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 2px var(--surface); }
+.legend .thin { width: 14px; height: 0; border-top: 1px solid var(--ink-2); }
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--muted); font: 11px var(--font-data); }
+.chart .panel-title { fill: var(--ink-2); font: 500 12px var(--font-body); }
+.chart .place { fill: var(--ink-2); font: 11px var(--font-body); }
+.tip {
+  position: absolute; pointer-events: none;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--ring); border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 8px 10px; font-size: 12px; line-height: 1.5;
+  min-width: 190px;
+}
+.tip .row { display: flex; justify-content: space-between; gap: 16px; }
+.tip .row span:last-child { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.tip .t { color: var(--muted); font-family: var(--font-data); margin-bottom: 2px; }
+.notes { color: var(--ink-2); font-size: 14px; display: grid; gap: 8px; }
+.notes p { max-width: 72ch; }
+code { font-family: var(--font-data); font-size: 0.92em; }
+</style>
+
+<main>
+  <header class="lead">
+    <div class="eyebrow">MacBook Pro 2019 · T2 · GNOME 50</div>
+    <h1>Auto-Brightness Walk</h1>
+    <p>Twenty minutes carrying the laptop between a dark room, a badly lit room, a well lit room and outdoors, setting the brightness by hand at each stop. Automatic brightness was off. The recorded light readings are then replayed through GNOME's algorithm and two replacements. Each one gets the 6% chosen in the badly lit room at the start, and is left alone after that.</p>
+  </header>
+
+  <section>
+    <h2>How each algorithm did</h2>
+    <div class="panel table-wrap">
+      <table id="summary">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th class="num">Typical miss</th>
+            <th class="num">Changes while standing still</th>
+            <th class="num">Lag, brighter</th>
+            <th class="num">Lag, darker</th>
+            <th class="num">Timer wakeups</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="notes">Typical miss is the median factor between the algorithm's backlight and the one chosen by hand, over the nine "looks good" moments after the start. Lag is how much later than the light sensor the backlight gets 90% of the way to its new level, one number per move. Timer wakeups are extra wakeups beyond the sensor's own updates; in parentheses, how many fell while standing still.</p>
+  </section>
+
+  <section>
+    <h2>The walk</h2>
+    <div class="panel">
+      <div class="legend" id="legend"></div>
+      <div class="chart" id="chart">
+        <svg id="svg" role="img" aria-label="Light sensor readings and backlight levels over the 20-minute walk"></svg>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Every "looks good" moment</h2>
+    <div class="panel table-wrap">
+      <table id="points">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Place</th>
+            <th class="num">Sensor</th>
+            <th class="num">Chosen</th>
+            <th class="num">Stock</th>
+            <th class="num">Fixed timing</th>
+            <th class="num">Power law</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h2>How to read this</h2>
+    <p><strong>Stock GNOME 50</strong> is a port of <code>iio_proxy_changed()</code> from gnome-settings-daemon 50.0, combined the way GNOME Shell 50.1 does it: backlight = gsd's target + slider − 50%. Right after you set the slider, gsd maps the current light to a 66.7% target, so with the slider at its minimum the backlight can't go below about 17%. That's why stock starts at 16.7% instead of 6%. It ignores readings of 0, but readings just above 0 in the dark push it to 0%.</p>
+    <p><strong>Fixed timing</strong> keeps GNOME's mapping and Shell's slider bias, and only replaces the smoothing: each reading counts for the time it actually held, a 10 s time constant, a 2-point dead zone, and no polling.</p>
+    <p><strong>Power law</strong> also replaces the mapping with backlight = 6% × (reading / start reading)<sup>0.4</sup>, with a 1% floor that also applies when the sensor reads 0. It smooths on a log scale with a 10% dead zone, brightening with a 3 s time constant and dimming with 10 s. The exponent was fitted to this same walk, so its accuracy here is flattering. Its steadiness, lag and wakeup counts don't depend on that fit.</p>
+    <p>The sensor values are not really lux: outdoors on a mild afternoon they reach 1.5 million. In the dark room the sensor reads 0, drawn at the bottom edge of the top panel.</p>
+  </section>
+</main>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById("data").textContent);
+  const COLORS = ["var(--s1)", "var(--s2)", "var(--s3)"];
+  const start = new Date(D.start_wall);
+
+  const clock = (t) => {
+    const d = new Date(start.getTime() + t * 1000);
+    return d.toTimeString().slice(0, 8);
+  };
+  const pct = (v) => v == null ? "–" : (v < 10 ? v.toFixed(1) : v.toFixed(0)) + "%";
+  const compact = (v) => v >= 1e6 ? (v / 1e6).toFixed(v >= 1e7 ? 0 : 1) + "M"
+    : v >= 1e3 ? (v / 1e3).toFixed(v >= 1e4 ? 0 : 1) + "K" : String(Math.round(v));
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+  // Summary table
+  const sb = document.querySelector("#summary tbody");
+  D.summaries.forEach((s, i) => {
+    const lags = (a) => a.length ? a.map((x) => (x > 0 ? "+" : "") + x).join(", ") + " s" : "–";
+    sb.insertAdjacentHTML("beforeend", `<tr>
+      <td><span class="key"><span class="swatch" style="background:${COLORS[i]}"></span>${esc(s.name)}</span>
+        <span class="sub">${esc(s.description)}</span></td>
+      <td class="num">×${s.typical_error.toFixed(2)}</td>
+      <td class="num">${s.stay_changes}</td>
+      <td class="num">${lags(s.lag_up)}</td>
+      <td class="num">${lags(s.lag_down)}</td>
+      <td class="num">${s.timer_wakeups} (${s.stay_wakeups})</td>
+    </tr>`);
+  });
+
+  // Detail table
+  const pb = document.querySelector("#points tbody");
+  D.looks_good.forEach(([t, place, user, sensor, ...algo]) => {
+    pb.insertAdjacentHTML("beforeend", `<tr>
+      <td class="num">${clock(t)}</td><td>${esc(place)}</td>
+      <td class="num">${compact(sensor)}</td><td class="num">${pct(user)}</td>
+      ${algo.map((v) => `<td class="num">${pct(v)}</td>`).join("")}
+    </tr>`);
+  });
+
+  // Legend
+  const lg = document.getElementById("legend");
+  lg.insertAdjacentHTML("beforeend",
+    `<span class="key"><span class="dot"></span>Chosen by hand ("looks good")</span>
+     <span class="key"><span class="thin"></span>Backlight set by hand</span>`);
+  D.series.forEach((s, i) => lg.insertAdjacentHTML("beforeend",
+    `<span class="key"><span class="swatch" style="background:${COLORS[i]}"></span>${esc(s.name)}</span>`));
+
+  // Places: each stretch between "moving" notes is named after the
+  // "looks good" note inside it
+  const placeName = (n) => /dark/.test(n) ? "Dark" : /outs|outd/.test(n) ? "Outside"
+    : /well lit/.test(n) ? "Well lit" : "Badly lit";
+  const moves = D.notes.filter(([, n]) => n.startsWith("moving")).map(([t]) => t);
+  const bounds = [0, ...moves, D.duration_s];
+  const stretches = [];
+  for (let i = 0; i < bounds.length - 1; i++) {
+    const g = D.looks_good.find(([t]) => t >= bounds[i] && t < bounds[i + 1]);
+    if (g) stretches.push({from: bounds[i], to: bounds[i + 1], name: placeName(g[1]), good: g[0]});
+  }
+
+  // Step-function lookup
+  const at = (pts, t) => {
+    let lo = 0, hi = pts.length - 1, ans = null;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (pts[mid][0] <= t) { ans = pts[mid][1]; lo = mid + 1; } else hi = mid - 1;
+    }
+    return ans;
+  };
+
+  const svg = document.getElementById("svg");
+  const tip = document.getElementById("tip");
+  const chartBox = document.getElementById("chart");
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (name, attrs, parent) => {
+    const e = document.createElementNS(NS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    (parent || svg).appendChild(e);
+    return e;
+  };
+
+  function draw() {
+    const W = Math.max(chartBox.clientWidth, 300);
+    const narrow = W < 560;
+    const m = {l: narrow ? 40 : 48, r: 8};
+    const top = 30;
+    const hA = narrow ? 110 : 140, gap = 34, hB = narrow ? 200 : 260, bottom = 26;
+    const H = top + hA + gap + hB + bottom;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.innerHTML = "";
+    const pw = W - m.l - m.r;
+    const x = (t) => m.l + (t / D.duration_s) * pw;
+
+    // Panel A: sensor, log scale, 0 drawn at the bottom edge
+    const aTop = top, aBot = top + hA;
+    const aMin = Math.log10(100), aMax = Math.log10(3e6);
+    const yA = (v) => v <= 0 ? aBot : aBot - (Math.log10(Math.max(v, 100)) - aMin) / (aMax - aMin) * (hA - 8);
+    // Panel B: backlight, log scale 0.5–100%, 0 at the bottom edge
+    const bTop = aBot + gap, bBot = bTop + hB;
+    const bMin = Math.log10(0.5), bMax = Math.log10(100);
+    const yB = (v) => v <= 0.5 ? bBot : bBot - (Math.log10(v) - bMin) / (bMax - bMin) * (hB - 6);
+
+    // Stay shading and place names
+    stretches.forEach((s, i) => {
+      if (i % 2 === 0) {
+        el("rect", {x: x(s.from), y: aTop, width: x(s.to) - x(s.from), height: bBot - aTop, fill: "var(--stay)"});
+      }
+      const mid = (x(s.from) + x(s.to)) / 2;
+      const room = x(s.to) - x(s.from);
+      const label = narrow && room < 46 ? s.name.split(" ")[0].slice(0, 4) : s.name;
+      if (room > label.length * 6 + 4) {
+        el("text", {x: mid, y: aTop - 10, "text-anchor": "middle", class: "place"}).textContent = label;
+      }
+    });
+
+    // Grid and axes
+    const gridA = [1e2, 1e3, 1e4, 1e5, 1e6];
+    gridA.forEach((v) => {
+      el("line", {x1: m.l, x2: W - m.r, y1: yA(v), y2: yA(v), stroke: "var(--grid)", "stroke-width": 1});
+      el("text", {x: m.l - 6, y: yA(v) + 4, "text-anchor": "end"}).textContent = compact(v);
+    });
+    el("text", {x: m.l - 6, y: aBot + 4, "text-anchor": "end"}).textContent = "0";
+    el("line", {x1: m.l, x2: W - m.r, y1: aBot, y2: aBot, stroke: "var(--axis)", "stroke-width": 1});
+    el("text", {x: m.l, y: aTop + 2, class: "panel-title"}).textContent = "Light sensor reading";
+
+    const gridB = narrow ? [1, 5, 20, 100] : [1, 2, 5, 10, 20, 50, 100];
+    gridB.forEach((v) => {
+      el("line", {x1: m.l, x2: W - m.r, y1: yB(v), y2: yB(v), stroke: "var(--grid)", "stroke-width": 1});
+      el("text", {x: m.l - 6, y: yB(v) + 4, "text-anchor": "end"}).textContent = v + "%";
+    });
+    el("text", {x: m.l - 6, y: bBot + 4, "text-anchor": "end"}).textContent = "0";
+    el("line", {x1: m.l, x2: W - m.r, y1: bBot, y2: bBot, stroke: "var(--axis)", "stroke-width": 1});
+    el("text", {x: m.l, y: bTop - 8, class: "panel-title"}).textContent = "Backlight";
+
+    // Time axis
+    const step = narrow ? 300 : 120;
+    for (let t = 0; t <= D.duration_s + 1; t += step) {
+      el("text", {x: x(t), y: bBot + 18, "text-anchor": t === 0 ? "start" : "middle"}).textContent = clock(t).slice(0, 5);
+    }
+
+    const stepPath = (pts, y) => {
+      let d = "";
+      pts.forEach(([t, v], i) => {
+        const px = x(t).toFixed(1), py = y(v).toFixed(1);
+        d += i === 0 ? `M${px},${py}` : `H${px}V${py}`;
+      });
+      return d + `H${x(D.duration_s).toFixed(1)}`;
+    };
+
+    el("path", {d: stepPath(D.readings, yA), fill: "none", stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-linejoin": "round"});
+    el("path", {d: stepPath(D.user, yB), fill: "none", stroke: "var(--ink-2)", "stroke-width": 1, opacity: 0.7});
+    D.series.forEach((s, i) => {
+      el("path", {d: stepPath(s.points, yB), fill: "none", stroke: COLORS[i], "stroke-width": 2,
+        "stroke-linejoin": "round", "stroke-linecap": "round"});
+    });
+    D.looks_good.forEach(([t, , user]) => {
+      el("circle", {cx: x(t), cy: yB(user), r: 4.5, fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 2});
+    });
+
+    // Hover layer
+    const cross = el("line", {y1: aTop, y2: bBot, stroke: "var(--ink-2)", "stroke-width": 1, opacity: 0, "pointer-events": "none"});
+    const hit = el("rect", {x: m.l, y: aTop, width: pw, height: bBot - aTop, fill: "transparent"});
+    const show = (clientX) => {
+      const r = svg.getBoundingClientRect();
+      const sx = (clientX - r.left) * (W / r.width);
+      const t = Math.min(Math.max((sx - m.l) / pw * D.duration_s, 0), D.duration_s);
+      cross.setAttribute("x1", x(t)); cross.setAttribute("x2", x(t)); cross.setAttribute("opacity", 0.5);
+      const rows = [["Sensor", compact(at(D.readings, t) ?? 0)], ["Set by hand", pct(at(D.user, t))]]
+        .concat(D.series.map((s) => [s.name, pct(at(s.points, t))]));
+      tip.innerHTML = `<div class="t">${clock(t)}</div>` + rows.map(([k, v], i) => {
+        const sw = i >= 2 ? `<span class="swatch" style="background:${COLORS[i - 2]}"></span>` : "";
+        return `<div class="row"><span class="key">${sw}${esc(k)}</span><span>${v}</span></div>`;
+      }).join("");
+      tip.hidden = false;
+      const px = x(t) * (r.width / W);
+      const tw = tip.offsetWidth;
+      tip.style.left = (px + 14 + tw > r.width ? px - 14 - tw : px + 14) + "px";
+      tip.style.top = (bTop * (r.height / H)) + "px";
+    };
+    hit.addEventListener("pointermove", (e) => show(e.clientX));
+    hit.addEventListener("pointerdown", (e) => show(e.clientX));
+    hit.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("opacity", 0); });
+  }
+
+  draw();
+  let pending;
+  new ResizeObserver(() => { cancelAnimationFrame(pending); pending = requestAnimationFrame(draw); }).observe(chartBox);
+})();
+</script>

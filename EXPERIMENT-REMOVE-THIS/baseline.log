@@ -1,0 +1,3 @@
+20:21:34.942 (gsd-power:368281): GLib-DEBUG: 20:21:34.939: unsetenv() is not thread-safe and should not be used after threads are created
+20:21:35.524 (gsd-power:368281): power-plugin-DEBUG: 20:21:35.046: Registered client at path /org/gnome/SessionManager/Client21
+20:23:04.939 (gsd-power:368281): power-plugin-DEBUG: 20:23:04.932: Got SIGTERM; shutting down ...
