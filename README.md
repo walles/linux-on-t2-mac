@@ -1,13 +1,9 @@
-# Outages for Linux on this macBook
+# Outages for Linux on Johan's macBook
 
 Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Redo ~/src/twin's has-arrow-keys-emulation detection based on that Windows
-  Terminal person's suggestion. This should make PTYXIS work OOTB, and we need
-  to regression test it against whatever else we have. Skip as much per-terminal
-  logic as possible.
 - Firefox seems to lose its session on shutdown and brings up the troubleshooting
   page on the next boot. Can we make it shut down nicely instead?
 - Consider the threat model for LUKS. The only thing I could imagine is the
@@ -24,6 +20,11 @@ Sorted in priority order. Once something works, move to DONE.
   in this case? Some discussion here:
   https://github.com/ghostty-org/ghostty/discussions/5812#discussioncomment-18709875
   Also, Claude had some suggestion about a EDITOR wrapper for this specific case.
+- Better automatic screen brightness: fix GNOME's smoothing upstream, and
+  maybe a power-law mapping. See "Improving it" in `auto-brightness.md`.
+- After resume the screen was once at max brightness, with automatic
+  brightness off. One Touch Bar press brought it back. Maybe the hardware
+  comes back at full and GNOME Shell doesn't notice.
 
 # DONE
 
@@ -31,6 +32,9 @@ Sorted in priority order. Once something works, move to DONE.
   stayed awake all night with the lid closed, getting warm. Now
   `lid-blank-screen` suspends again after any wake with the lid closed. See
   `wake-with-lid-closed.md`.
+- Screen brightness kept changing on its own. GNOME's Automatic Screen
+  Brightness was following a coarse, flapping light sensor. Turned it off.
+  Notes in `auto-brightness.md`.
 - Daily automatic upgrades. Ubuntu's `unattended-upgrades` skipped every run
   because the machine is always on battery. Now runs on battery when above
   30%, and retries when getting online. See `auto-upgrades.md`.
@@ -77,3 +81,7 @@ Sorted in priority order. Once something works, move to DONE.
   would have to go.
 - Lower power consumption with lid open. Read something about graphics and
   things needing some parameter somewhere to fix battery usage.
+- Redo ~/src/twin's has-arrow-keys-emulation detection based on that Windows
+  Terminal person's suggestion. This should make PTYXIS work OOTB, and we need
+  to regression test it against whatever else we have. Skip as much per-terminal
+  logic as possible.
