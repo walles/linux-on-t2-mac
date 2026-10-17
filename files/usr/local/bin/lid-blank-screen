@@ -8,8 +8,11 @@
 # this only turns the screen off. Same with an external monitor connected,
 # like logind does by default.
 #
-# Known problem: if something other than the lid wakes the machine, it stays
-# awake with the lid closed and the screen off.
+# If something other than the lid wakes the machine, like plugging in the
+# charger, this suspends it again if the lid is still closed. See
+# wake-with-lid-closed.md.
+
+set -o pipefail
 
 set_power_save() {
   # 0 = on, 3 = off
@@ -26,8 +29,9 @@ radeon_is_on() {
 }
 
 lid_is_closed() {
-  [[ $(busctl get-property org.freedesktop.UPower /org/freedesktop/UPower \
-    org.freedesktop.UPower LidIsClosed) == "b true" ]]
+  # Asks ACPI directly. Right after a resume, UPower may not have seen the lid
+  # open yet.
+  grep -q closed /proc/acpi/button/lid/LID0/state
 }
 
 is_docked() {
@@ -35,23 +39,54 @@ is_docked() {
     org.freedesktop.login1.Manager Docked) != "b false" ]]
 }
 
-gdbus monitor --system --dest org.freedesktop.UPower \
-  --object-path /org/freedesktop/UPower |
+lock_and_suspend() {
+  busctl --user call org.gnome.ScreenSaver /org/gnome/ScreenSaver \
+    org.gnome.ScreenSaver Lock
+  # Let the lock screen come up first, it turns the screen on
+  sleep 1
+  # The lid may have opened again during the sleep
+  lid_is_closed || return
+  set_power_save 3
+  if radeon_is_on && ! is_docked; then
+    systemctl suspend
+  fi
+}
+
+monitor() {
+  gdbus monitor --system --dest org.freedesktop.UPower \
+    --object-path /org/freedesktop/UPower &
+  gdbus monitor --system --dest org.freedesktop.login1 \
+    --object-path /org/freedesktop/login1 &
+  # If either one stops, stop the other one too, so systemd restarts us
+  wait -n
+  # shellcheck disable=SC2046 # One PID per word
+  kill $(jobs -p) 2>/dev/null
+  return 1
+}
+
+last_resuspend=-60
+monitor |
   while read -r line; do
     case "$line" in
     *"'LidIsClosed': <true>"*)
-      busctl --user call org.gnome.ScreenSaver /org/gnome/ScreenSaver \
-        org.gnome.ScreenSaver Lock
-      # Let the lock screen come up first, it turns the screen on
-      sleep 1
-      set_power_save 3
-      # The lid may have opened again during the sleep
-      if radeon_is_on && lid_is_closed && ! is_docked; then
-        systemctl suspend
-      fi
+      lock_and_suspend
       ;;
     *"'LidIsClosed': <false>"*)
       set_power_save 0
+      ;;
+    *".PrepareForSleep (false,)"*)
+      # Just resumed
+      if lid_is_closed; then
+        # Don't loop if suspends keep failing or waking right back up.
+        # SECONDS follows the wall clock, so time asleep counts.
+        if ((SECONDS - last_resuspend < 60)); then
+          echo "Woke up with the lid closed again within a minute, staying awake"
+        else
+          echo "Woke up with the lid closed, suspending again"
+          last_resuspend=$SECONDS
+          lock_and_suspend
+        fi
+      fi
       ;;
     esac
   done

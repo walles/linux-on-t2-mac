@@ -27,6 +27,10 @@ Sorted in priority order. Once something works, move to DONE.
 
 # DONE
 
+- Plugging in the charger with the lid closed woke the machine, and it then
+  stayed awake all night with the lid closed, getting warm. Now
+  `lid-blank-screen` suspends again after any wake with the lid closed. See
+  `wake-with-lid-closed.md`.
 - Daily automatic upgrades. Ubuntu's `unattended-upgrades` skipped every run
   because the machine is always on battery. Now runs on battery when above
   30%, and retries when getting online. See `auto-upgrades.md`.
