@@ -54,7 +54,7 @@ Radeon.
   starts 3 ms later and fails the same way.
 - Waiting after the restore: 100 ms black, 175, 250, 400 ms and 1 s worked.
   One test each, so 200 ms has little margin.
-- The patch with 200 ms: three out of three worked. i915 resumed in 0.27s,
+- The patch with 200 ms: four out of four worked. i915 resumed in 0.27s,
   instead of failing for 3s.
 - Port 0x11 reads 3 when switched to the Radeon, 1 right after switching to
   the Intel GPU, and 0 only once i915 has trained the link. It stayed at 1
