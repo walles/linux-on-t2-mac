@@ -169,8 +169,7 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 ## Conclusions
 
 - Suspend to RAM works on this machine. The keyboard, trackpad, touch bar and
-  wifi come back. Two-finger scroll still worked after a resume on 2026-10-18,
-  after dropping `9027.conf` and `89-t2-trackpad.conf`.
+  wifi come back, including two-finger scroll.
 - The black screen: i915 sets up the panel during the resume, before the panel
   can be reached. Guess: the firmware switches the mux to the Radeon in S3,
   and apple_gmux switches it back only after i915 has resumed. PCI devices
