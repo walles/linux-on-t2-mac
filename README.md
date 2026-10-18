@@ -19,6 +19,10 @@ Sorted in priority order. Once something works, move to DONE.
   deqrocks has dGPU power management working on 16,x, unreleased so far:
   https://github.com/open-acpica/acpica/pull/1236#issuecomment-5927183157
 - Proper quick wakeup: https://github.com/open-acpica/acpica/pull/1236
+- Send the apple-gmux patch upstream, so the screen comes back after
+  suspending with the screen on, like from the GNOME menu. Tested and
+  working. See
+  `black-screen-after-resume.md`.
 - Doing `git commit` brings up a notification saying VSCode is ready, and VSCode
   shows up behind some other windows. Can we make the window move to the front
   in this case? Some discussion here:

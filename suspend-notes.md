@@ -170,11 +170,9 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 
 - Suspend to RAM works on this machine. The keyboard, trackpad, touch bar and
   wifi come back, including two-finger scroll.
-- The black screen: i915 sets up the panel during the resume, before the panel
-  can be reached. Guess: the firmware switches the mux to the Radeon in S3,
-  and apple_gmux switches it back only after i915 has resumed. PCI devices
-  come before the gmux ACPI device in the resume order, and `pm_async=off`
-  makes that order strict.
+- The black screen: the firmware switches the mux to the Radeon in S3, and
+  the stock apple_gmux switches it back only after i915 has resumed. A patch
+  fixes it, see `black-screen-after-resume.md`.
 - With the screen off before suspending and on after, like lid close does,
   the screen works without any kernel fix.
 - Suspend on lid close works: `lid-blank-screen` suspends after turning the
@@ -250,12 +248,12 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
   - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
     resume at the same time. That should save about 9s. It's there from the
     t2linux setup, but the current t2bce driver may not need it. It could
-    change the i915 and gmux resume order.
+    change the i915 and gmux resume order. With the patch from
+    `black-screen-after-resume.md` that shouldn't matter.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
-- Optional kernel fix: a device link from i915 to apple_gmux, so gmux resumes
-  first. Needed for suspend without turning the screen off first, like from
-  the GNOME menu.
+- Suspend without turning the screen off first, like from the GNOME menu:
+  needs the patch from `black-screen-after-resume.md`.
 
 ## Side findings
 
