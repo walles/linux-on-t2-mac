@@ -175,7 +175,8 @@ directories, then running `sudo systemctl daemon-reload`.
   T2 config lives in `/etc/dracut.conf.d/` so it should survive, but the checks
   in `install-fixes.sh` don't run. It did survive the dracut upgrade on
   2026-10-05. To check by hand before rebooting, the first should list
-  `tbt-peg12.aml`, and the second should list `bcm5974` before `t2bce_vhci`:
+  `tbt-peg12.aml`, and the second should list `t2bce_vhci`, the keyboard driver for typing
+  the disk password:
   `sudo lsinitrd /boot/initrd.img-$(uname -r) | grep tbt-peg12.aml`
   `sudo lsinitrd -f etc/cmdline.d/20-force_drivers.conf /boot/initrd.img-$(uname -r)`
 - The T2 kernel repo isn't in the allowed origins, so kernels are never

@@ -59,14 +59,13 @@ Sorted in priority order. Once something works, move to DONE.
 - GNOME thinks I have a mouse, not a trackpad. Can't two finger scroll or
   two-finger click for right click. GNOME settings say nothing about
   trackpads.
-  - Fixed by `files/etc/dracut.conf.d/89-t2-trackpad.conf`: the initramfs
-    force-loads `apple-bce` for the LUKS prompt, which made `usbhid` claim the
-    trackpad before `bcm5974` loaded. Now `bcm5974` is force-loaded first.
+  - Works out of the box with the T2 kernel, where `hid-magicmouse` drives the
+    trackpad. On the fallback Ubuntu kernel it's a plain mouse.
 - Inserting my USB drive should make it accessible in Linux
   - Fixed by `files/etc/udev/rules.d/90-t2-usbc-hotplug.rules`: the USB-C
     xHCI controllers runtime-suspended and never woke on plug-in, since Apple
     firmware lacks the ACPI links for that. Now they're kept powered on.
-- The quick wake, trackpad and USB drive fixes are all installed with
+- The quick wake and USB drive fixes are both installed with
   `sudo ./install-fixes.sh`.
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane. No terminal multiplexer.
