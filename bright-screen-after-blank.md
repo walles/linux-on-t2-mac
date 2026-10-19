@@ -28,8 +28,12 @@ tells the kernel.
 - Writing the old value back through logind, like mutter does, restores both
   the register and what the screen shows.
 
+It happens the same way with the panel on the Intel GPU (`force_igd=y`)
+and on the Radeon, so it isn't caused by t2linux's `force_igd` patch, and
+it isn't specific to i915 or amdgpu.
+
 Unknown so far: whether the gmux firmware resets the register when the panel
-powers off, or something in the kernel, like i915 or ACPI, writes it.
+powers off, or something in the kernel, like ACPI, writes it.
 
 `apple_gmux` can't easily fix this. It is only told about system suspend and
 resume (`BL_CORE_SUSPENDRESUME` makes the backlight core write the brightness
@@ -37,8 +41,7 @@ back after a resume). Nothing tells it when the screen goes off or on.
 
 ## Measurements
 
-2026-10-19, kernel 7.2.8-1-t2, GNOME 50.1, `force_igd=y`, automatic
-brightness off. The screen was blanked through mutter for 5 s, with
+2026-10-19, kernel 7.2.8-1-t2, GNOME 50.1, automatic brightness off. The screen was blanked through mutter for 5 s, with
 `udevadm monitor --kernel --udev --subsystem-match=backlight` running:
 
 ```sh
@@ -62,20 +65,21 @@ busctl call org.freedesktop.login1 /org/freedesktop/login1/session/auto \
 
 `actual_brightness` read 19525 again and the screen went back to normal.
 
+The same test with the panel on the Radeon (`force_igd` commented out,
+the panel on amdgpu's `card2-eDP-1`): 18752 before, 52428 from 1 s into the
+blank until after the screen came on, `brightness` stayed at 18752, no udev
+events, and the screen came back bright. Writing 18752 back restored it.
+
 The screen was also bright once after a resume from suspend (2026-10-16).
 That may be the same reset, or the backlight core's write after the resume
 getting lost. Not tested.
 
 ## Next steps
 
-1. Repeat with the panel on the Radeon, `force_igd` off in
-   `/etc/modprobe.d/apple-gmux.conf`. If the reset goes away, it's a
-   t2linux bug
-   ([linux-t2-patches](https://github.com/t2linux/linux-t2-patches)), since
-   `force_igd` only exists in t2linux's patch 2009. If it stays, report it to
-   platform-driver-x86@vger.kernel.org (Hans de Goede, Ilpo Järvinen), cc
-   Orlando Chamberlain and Lukas Wunner.
-2. Time the reset against i915's panel power-off with `drm.debug`, to find
+1. Report it to platform-driver-x86@vger.kernel.org (Hans de Goede, Ilpo
+   Järvinen), cc Orlando Chamberlain and Lukas Wunner. It happens on the
+   Radeon too, so it isn't a t2linux-only bug.
+2. Time the reset against the panel power-off with `drm.debug`, to find
    out who writes the register.
 3. Test suspend with the screen on and off, with and without the apple-gmux
    patch from `black-screen-after-resume.md`.
