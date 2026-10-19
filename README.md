@@ -31,9 +31,9 @@ Sorted in priority order. Once something works, move to DONE.
   Also, Claude had some suggestion about a EDITOR wrapper for this specific case.
 - Better automatic screen brightness: fix GNOME's smoothing upstream, and
   maybe a power-law mapping. See "Improving it" in `auto-brightness.md`.
-- After resume the screen was once at max brightness, with automatic
-  brightness off. One Touch Bar press brought it back. Maybe the hardware
-  comes back at full and GNOME Shell doesn't notice.
+- The screen comes back very bright after GNOME blanks it. The gmux
+  brightness register is reset to 80% while the screen is off, and the
+  kernel doesn't notice. See `bright-screen-after-blank.md`.
 
 # DONE
 

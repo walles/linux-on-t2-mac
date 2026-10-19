@@ -121,10 +121,5 @@ measured yet; `tau` 20 s would take ~45 s to get 90% of the way.
 
 ## Unrelated problem found
 
-After resume the backlight was at max once (2026-10-16 evening), with
-automatic brightness off. One Touch Bar press brought it back to the
-expected level. Probably the hardware comes back at full and Shell doesn't
-notice. Not investigated. Matches
-[gnome-shell #8744](https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/8744),
-"screen set to max brightness after screen blank", from another MacBook Pro
-2019 (T2) on GNOME 49.1. Open, no replies as of 2026-10-17.
+The screen comes back very bright after a blank. Moved to
+`../bright-screen-after-blank.md`.
