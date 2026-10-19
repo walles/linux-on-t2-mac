@@ -42,6 +42,11 @@ reset, and no ACPI event fires.
 resume (`BL_CORE_SUSPENDRESUME` makes the backlight core write the brightness
 back after a resume). Nothing tells it when the screen goes off or on.
 
+A fix must write the brightness after the panel is back on, not while it's
+off. A write while the panel is off sticks in the register, but the screen
+then comes back with the backlight off, black, until the next brightness
+write. See [Writing while the screen is off](#writing-while-the-screen-is-off).
+
 ## Measurements
 
 2026-10-19, kernel 7.2.8-1-t2, GNOME 50.1, automatic brightness off. The
@@ -102,6 +107,28 @@ controllers didn't change power state: the used ones stayed active in D0,
 and the unused bridges suspended in D3hot, with 0 ms active time. So no
 Thunderbolt `_PS0` ran.
 
+### Writing while the screen is off
+
+Blank, write the old value through logind 2 s in, unblank 3 s later. Two
+runs, 2026-10-19:
+
+- The register reset to 52428 at the blank as usual, and read the written
+  value 19525 from the write on, through the screen coming on and after.
+- The screen came back with the backlight off: black, no glow. The
+  keyboard backlight came back, so GNOME did unblank.
+- With `drm.debug`, i915's power-on looked the same as after an ordinary
+  blank: AUX timeouts for about 150 ms until the panel answers (16 after
+  an ordinary blank, 18 here), link training succeeded, backlight enable
+  on.
+- A Touch Bar brightness key press (19525 → 22769) brought the screen
+  back. The first time, a lid close and open did, since that suspends and
+  the backlight core writes the brightness on resume.
+
+So the backlight is turned off or kept off when the panel powers on after a
+write made while it was off, and the next write turns it on. Writing the
+same value again works too: in a third run, writing 19525 again 3 s after
+the screen came on brought the backlight back.
+
 The screen was also bright once after a resume from suspend (2026-10-16).
 That may be the same reset, or the backlight core's write after the resume
 getting lost. Not tested.
@@ -112,14 +139,16 @@ getting lost. Not tested.
    Järvinen), cc Orlando Chamberlain and Lukas Wunner. It happens on the
    Radeon too, so it isn't a t2linux-only bug. The question for them is
    where a fix should go, since `apple_gmux` isn't told when the panel
-   powers on. Maybe the GPU drivers could tell the backlight device that
-   the panel came back.
+   powers on, and writing while it's off leaves the screen black. Maybe
+   the GPU drivers could tell the backlight device that the panel came
+   back.
 2. Test suspend with the screen on and off, with and without the apple-gmux
    patch from `black-screen-after-resume.md`.
 3. Find out why it started with GNOME 49. The reporter is sure it didn't
    happen before. Possibly gnome-settings-daemon ≤ 48 wrote the brightness
    back after the screen came on, and so hid the reset. If so, mutter
-   writing its brightness back on screen on would be a real workaround.
+   writing its brightness back after the screen is on, not before, would
+   be a real workaround. Repeating the last value is enough.
    swick's patch on #8744 only reads it again, which would move the slider
    to 80% instead of restoring the old level.
 4. Post these numbers on #8744.
