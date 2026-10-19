@@ -5,9 +5,10 @@ gives a black screen after the resume. Keyboard, touch bar and everything
 else come back. Turning the screen off and on again brings it back, which is
 why `lid-blank-screen` turns the screen off before suspending.
 
-`kernel-patches/apple-gmux-resume-early.patch` fixes it. Tested with S3 on
-this MacBookPro16,1 on 2026-10-18, see below. Hibernation and older Macs are
-untested. Not sent upstream yet.
+A patch to apple_gmux fixes it, sent to t2linux as
+https://github.com/t2linux/linux-t2-patches/pull/74. Tested with S3 on this
+MacBookPro16,1 on 2026-10-18, see below. Hibernation and older Macs are
+untested.
 
 ## Cause
 
@@ -33,7 +34,7 @@ the time GNOME turns the screen on, the switch is right.
 
 ## The fix
 
-In the patch, apple_gmux restores the switch in `.resume_early`, and in the
+With the patch, apple_gmux restores the switch in `.resume_early`, and in the
 early phases of hibernation thaw and restore. All early resume callbacks are
 done before any normal `.resume` starts, so the switch is in place before
 i915 touches the panel, with or without `pm_async=off`.
@@ -66,13 +67,20 @@ Radeon.
 
 ## Trying the patch
 
-apple_gmux is a module, so no kernel build or reboot is needed. Get
-`drivers/platform/x86/apple-gmux.c` for the running kernel version, apply the
-apple-gmux part of t2linux's
-`2009-apple-gmux-allow-switching-to-igpu-at-probe.patch`, then this patch. In
-a directory with the patched `apple-gmux.c`:
+appl## Trying the patch
+
+apple_gmux is a module, so no kernel build or reboot is needed. This builds
+the running kernel's `apple-gmux.c` with t2linux's patch 2009 and the fix:
 
 ```sh
+v=$(uname -r | cut -d- -f1)
+mkdir -p drivers/platform/x86
+curl -fL -o drivers/platform/x86/apple-gmux.c \
+  "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/plain/drivers/platform/x86/apple-gmux.c?h=v$v"
+curl -fLO https://raw.githubusercontent.com/t2linux/linux-t2-patches/main/2009-apple-gmux-allow-switching-to-igpu-at-probe.patch
+curl -fLO https://raw.githubusercontent.com/walles/linux-t2-patches/apple-gmux-resume-early/2010-apple-gmux-restore-the-display-switch-before-the-GPUs-resume.patch
+git apply --include='*apple-gmux.c' 2009-*.patch 2010-*.patch
+cd drivers/platform/x86
 echo 'obj-m := apple-gmux.o' > Makefile
 make -C /lib/modules/$(uname -r)/build M=$PWD modules
 sudo rmmod apple_gmux && sudo insmod ./apple-gmux.ko
@@ -81,18 +89,25 @@ sudo rmmod apple_gmux && sudo insmod ./apple-gmux.ko
 The stock module comes back at the next reboot. The brightness slider is
 gone for a moment while the module is unloaded.
 
-## Upstream
+nux, not mainline: the bug needs `force_igd`, which only exists
+in t2linux's patch 2009. On mainline, T2 Macs use the Radeon by default, so
+the firmware switching to it during S3 changes nothing. Pull request:
+https://github.com/t2linux/linux-t2-patches/pull/74.
 
-apple_gmux is maintained under X86 PLATFORM DRIVERS, Hans de Goede and Ilpo
-Järvinen, list platform-driver-x86@vger.kernel.org. Worth a cc: Lukas
-Wunner (vga_switcheroo) and Orlando Chamberlain (T2 gmux support).
+Mainline could still need it if T2 Macs on the Intel GPU through
+`gpu-power-prefs` hit the same bug, or once runtime GPU switching on T2 is
+upstreamed. `gpu-power-prefs` is set from macOS: on this machine efivarfs is
+read-only, and the t2linux FAQ says writing EFI variables from Linux can
+turn a MacBookPro16,1 off. Untested.
 
-The patch is against mainline and doesn't depend on the t2linux patch. It
-needs a commit message with the measurements, and `git format-patch`
-against the pdx86 `for-next` branch. Questions a reviewer may ask:
+For mainline, apple_gmux is maintained under X86 PLATFORM DRIVERS, Hans de
+Goede and Ilpo Järvinen, list platform-driver-x86@vger.kernel.org. Worth a
+cc: Lukas Wunner (vga_switcheroo) and Orlando Chamberlain (T2 gmux support).
+Questions a reviewer may ask:
 
-- Why hasn't this been seen on older Macs? The delay is T2 only, but the
-  `.resume_early` move applies to all of them.
+- Why hasn't this been seen on older Macs? Retina MacBook Pros from 2012
+  and 2015 on the Intel GPU reportedly resume fine with the stock driver.
+  The delay is T2 only, but the `.resume_early` move applies to all of them.
 - Why not fix it in i915, or with a device link from i915 to the gmux? The
   gmux driver owns the switch the firmware changed, so it should restore it
   before anyone uses it. Separately, i915 silently gives up when AUX doesn't
