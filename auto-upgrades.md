@@ -190,3 +190,15 @@ directories, then running `sudo systemctl daemon-reload`.
   afterwards.
 - BAT0 is hard coded. If it's missing, runs on battery are skipped.
 - The threshold is hard coded to 30% in both drop-ins.
+
+## Upstream
+
+Tracked in [LP #2089151](https://bugs.launchpad.net/ubuntu/+source/apt/+bug/2089151).
+
+- [unattended-upgrades#424](https://github.com/mvo5/unattended-upgrades/pull/424)
+  lets `OnlyOnACPower` take a battery percentage, checked before each upgrade
+  step. Once that's released, `OnlyOnACPower "30"` can replace turning it off
+  in `51unattended-upgrades-on-battery`, and a run would then also stop when
+  the battery drops below 30%.
+- `apt-daily-upgrade.service` would still need to drop
+  `ConditionACPower=true` in apt. That gets proposed once #424 is released.
