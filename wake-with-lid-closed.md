@@ -75,11 +75,19 @@ asleep wakes it, so open the lid first.
   than a minute ago. Implemented and tested on 2026-10-17: lid closed, charger
   plugged in, the machine woke at 13:08:11, logged "Woke up with the lid
   closed, suspending again" and was asleep again at 13:08:38. It then slept
-  until the lid opened at 13:13:35, and that wake stayed awake. The 26 s
-  before suspending again is unexplained: logind only said "The system will
-  suspend now!" at 13:08:37, while a lid-close suspend takes about 3 s. The lid state is read from
-  `/proc/acpi/button/lid/LID0/state`, since UPower may still say closed right
-  after a lid-open wake.
+  until the lid opened at 13:13:35, and that wake stayed awake. The lid state
+  is read from `/proc/acpi/button/lid/LID0/state`, since UPower may still say
+  closed right after a lid-open wake.
+- Asking GNOME to lock an already locked screen never answers, and `busctl`
+  gives up after 25 s. That was the 26 s before suspending again. So
+  `lid-blank-screen` only locks if the screen isn't locked already.
+- Suspending can be refused. On 2026-10-22 at 00:06 the charger woke the
+  machine, the wake started the overdue daily apt jobs, and apt 3.2 blocks
+  suspend while installing (`DPkg::Inhibit-Sleep`). Suspending at 00:07:19
+  failed with "Operation denied due to active block inhibitor", and the
+  machine stayed awake with the lid closed until 17:17. Now `lid-blank-screen`
+  retries every 30 s while the lid is closed, and gives up when it opens. It
+  doesn't override blockers, since interrupting an install would be worse.
 - Stop the charger from waking the machine at all. Not investigated. None of
   the entries in `/proc/acpi/wakeup` is obviously the power adapter, so it may
   be the SMC or the firmware doing it.

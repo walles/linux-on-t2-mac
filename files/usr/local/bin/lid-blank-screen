@@ -9,7 +9,8 @@
 # like logind does by default.
 #
 # If something other than the lid wakes the machine, like plugging in the
-# charger, this suspends it again if the lid is still closed. See
+# charger, this suspends it again if the lid is still closed. If suspending
+# is refused, it retries every 30s while the lid is closed. See
 # wake-with-lid-closed.md.
 
 set -o pipefail
@@ -39,16 +40,47 @@ is_docked() {
     org.freedesktop.login1.Manager Docked) != "b false" ]]
 }
 
+is_locked() {
+  [[ $(busctl --user --timeout=5 call org.gnome.ScreenSaver \
+    /org/gnome/ScreenSaver org.gnome.ScreenSaver GetActive) == "b true" ]]
+}
+
+can_suspend() { radeon_is_on && ! is_docked; }
+
+stop_retrying() {
+  # The retry loop is the only background job
+  # shellcheck disable=SC2046 # One PID per word
+  kill $(jobs -p) 2>/dev/null
+}
+
+suspend_or_retry() {
+  stop_retrying
+  systemctl suspend && return
+  # Something blocks suspending, like apt installing updates after a wake.
+  # Try again until it works or the lid opens.
+  echo "Suspending failed, retrying every 30s while the lid is closed"
+  (
+    while sleep 30 && lid_is_closed && can_suspend; do
+      # Something may have turned the screen on meanwhile
+      set_power_save 3
+      systemctl suspend && exit
+    done
+  ) &
+}
+
 lock_and_suspend() {
-  busctl --user call org.gnome.ScreenSaver /org/gnome/ScreenSaver \
-    org.gnome.ScreenSaver Lock
-  # Let the lock screen come up first, it turns the screen on
-  sleep 1
-  # The lid may have opened again during the sleep
+  # Locking an already locked screen never answers, so don't
+  if ! is_locked; then
+    busctl --user --timeout=5 call org.gnome.ScreenSaver \
+      /org/gnome/ScreenSaver org.gnome.ScreenSaver Lock
+    # Let the lock screen come up first, it turns the screen on
+    sleep 1
+  fi
+  # The lid may have opened again meanwhile
   lid_is_closed || return
   set_power_save 3
-  if radeon_is_on && ! is_docked; then
-    systemctl suspend
+  if can_suspend; then
+    suspend_or_retry
   fi
 }
 
@@ -72,6 +104,7 @@ monitor |
       lock_and_suspend
       ;;
     *"'LidIsClosed': <false>"*)
+      stop_retrying
       set_power_save 0
       ;;
     *".PrepareForSleep (false,)"*)
