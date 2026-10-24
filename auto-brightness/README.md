@@ -1,8 +1,7 @@
 # Auto-brightness experiment, working notes
 
-Temporary. Findings go in `../auto-brightness.md`. When done, keep the useful
-scripts and data in a permanent directory (for example `auto-brightness/`)
-and delete the rest.
+Scripts, data and notes behind `../auto-brightness.md`, where the findings
+are.
 
 ## Files
 
@@ -30,11 +29,6 @@ Scripts:
 - `calibration.py`: pairs each "looks good" note from the walk with the
   backlight level and the median sensor value over the preceding 20 s.
   Prints the table in `../auto-brightness.md`.
-- `run-gsd-power.sh`: doesn't work. It tries to replace the system
-  `gsd-power` with a local build, but
-  `org.gnome.SettingsDaemon.Power.service` refuses manual stop / start. The
-  local build then ran beside the system one without getting any light
-  readings. `baseline.log` is its useless output.
 
 Data:
 
@@ -49,8 +43,6 @@ Data:
 - `lid-test.csv`: 2026-10-16 20:33, across a 36 s lid close, plus a hand
   covering the sensor at 20:35:31. Also contains the unexplained jump from
   ~2,000 to ~45,000.
-- `test.csv`, `sysfs-test.txt`: first 20 s sample, with `in_illuminance_raw`
-  polled in parallel to check that D-Bus and sysfs agree. Can be deleted.
 
 ## Stock algorithm, gsd 50.0
 
@@ -100,7 +92,9 @@ measured yet; `tau` 20 s would take ~45 s to get 90% of the way.
   15.5–17.1% backlight, matching Shell's bias model. See
   `../auto-brightness.md`.
 - Then patch gsd, build, and find a way to run it in place of the system
-  `gsd-power`. Maybe: kill the system process while preventing systemd from
+  `gsd-power`. `org.gnome.SettingsDaemon.Power.service` refuses manual stop
+  and start, and a local build run beside the system one gets no light
+  readings. Maybe: kill the system process while preventing systemd from
   restarting it.
 
 ## Shell slider fix, gnome-shell #9488

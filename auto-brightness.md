@@ -43,7 +43,7 @@ Chain: ambient light sensor (`/sys/bus/iio/devices/iio:device0`, name `als`)
 ## Sensor behaviour
 
 Measured 2026-10-16 and 2026-10-17. Data and scripts are in
-`EXPERIMENT-REMOVE-THIS/`.
+[`auto-brightness/`](auto-brightness/).
 
 - The values aren't really lux. Indoors they range from ~10,000 to ~150,000,
   and outside on a not-too-bright afternoon ~1.5 million (real daylight is at
@@ -151,7 +151,7 @@ Plan:
    settled.
 
 Simulation, replaying the walk with the brightness set once to 6% at the
-start (details and chart in `EXPERIMENT-REMOVE-THIS/`):
+start (details and chart in [`auto-brightness/`](auto-brightness/)):
 
 | | Typical miss | Changes while standing still | Lag brighter / darker | Timer wakeups |
 |---|---|---|---|---|
@@ -172,7 +172,7 @@ and the slider all the way left gave 17.2–18.5%. That's a Shell-side
 problem, separate from the gsd smoothing, reported as
 [gnome-shell #9488](https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/9488).
 
-Working notes, scripts and data are in `EXPERIMENT-REMOVE-THIS/NOTES.md`.
+Working notes, scripts and data are in [`auto-brightness/`](auto-brightness/).
 
 Versions when this was written: GNOME 50, gnome-settings-daemon 50.0,
 iio-sensor-proxy 3.8, kernel 7.2.8-1-t2.
