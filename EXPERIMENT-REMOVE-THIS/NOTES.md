@@ -103,6 +103,36 @@ measured yet; `tau` 20 s would take ~45 s to get 90% of the way.
   `gsd-power`. Maybe: kill the system process while preventing systemd from
   restarting it.
 
+## Shell slider fix, gnome-shell #9488
+
+`shell-overlay/brightnessManager.js` is Shell 50.1's file, extracted with
+`gresource extract /usr/lib/gnome-shell/libshell-18.so
+/org/gnome/shell/misc/brightnessManager.js`, with the auto-brightness bias
+replaced: slider below the middle scales the target down to 0, above the
+middle it interpolates up to 100%. `brightnessManager.orig.js` is the
+unpatched copy. It's loaded through `G_RESOURCE_OVERLAYS` in
+`~/.config/environment.d/90-shell-brightness-overlay.conf`, from the next
+login. Also set with `systemctl --user set-environment`, since the user
+manager may survive a logout and then not re-read environment.d. To undo,
+delete that file, run `systemctl --user unset-environment
+G_RESOURCE_OVERLAYS`, `sudo apt-mark unhold gnome-shell gnome-shell-common`
+(held since 2026-10-21 so an upgrade doesn't run this 50.1 file in a newer
+Shell; mutter updates are kept back meanwhile) and log in again (from a text console, Ctrl+Alt+F3, if
+Shell doesn't start).
+
+Tested 2026-10-21, Ubuntu session: Shell logged "Opened file ... as a
+resource overlay", no JS errors. Turning auto-brightness on at 17.0% gave
+22.3–22.6% (predicted 66.7 × 0.17 / 0.5 = 22.6%; the old formula gives
+33.7%). The slider all the way left gave 655 (1%), steady. Before: ~17%.
+
+Known, also without the patch: `syncWithBacklight()` copies the raw
+backlight into the slider on monitor changes and external backlight
+changes, and `_sync()` then applies the auto-brightness formula again (the
+#9463 mechanism). With auto-brightness on, each such event steps the
+brightness: ×1.33 below the middle now, +16.7 pp before. The new formula
+is invertible, so the MR could map the read-back value back to a slider
+position, which would fix #9463 too.
+
 ## Environment
 
 - gsd clone: `~/src/gnome-settings-daemon`, branch `ambient-hold` from tag
