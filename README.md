@@ -4,8 +4,10 @@ Sorted in priority order. Once something works, move to DONE.
 
 ## TODO
 
-- Firefox seems to lose its session on shutdown and brings up the troubleshooting
-  page on the next boot. Can we make it shut down nicely instead?
+- Firefox loses its session on shutdown and brings up the restore page on
+  the next boot. SIGTERM kills it without saving, a Firefox bug, sent as
+  https://bugzilla.mozilla.org/show_bug.cgi?id=2086801. See
+  `firefox-session.md`.
 - Retry focus-follows-mouse with auto-raise once mutter `50.1-0ubuntu2.5`
   reaches `resolute-updates`. First try failed since focus jumped back to the
   window under the pointer after Cmd-Tab, a mutter bug fixed in that version.
