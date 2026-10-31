@@ -5,6 +5,11 @@ are.
 
 ## Files
 
+Upstream evidence:
+
+- `dead-zone.md`: the replay results behind the gsd dead zone MR, written
+  for its reviewers. Linked from the MR, so keep it about that change.
+
 Scripts:
 
 - `record-light.py <out.csv> [seconds]`: claims the light sensor from

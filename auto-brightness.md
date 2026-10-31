@@ -176,7 +176,10 @@ problem, separate from the gsd smoothing, reported as
 [gnome-shell #9488](https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/9488).
 
 The dead zone row is plan step 1. It also cuts the updates sent to Shell
-from 634 to 32. To reproduce, in `auto-brightness/`:
+from 634 to 32. The gsd MR links to
+[`auto-brightness/dead-zone.md`](auto-brightness/dead-zone.md), which
+presents this result for upstream readers: the recording, the replay and
+the metrics. To reproduce, in `auto-brightness/`:
 `python3 simulate.py walk.csv --notes walk-notes.csv` for the first three
 rows, `python3 split-variants.py` for the last.
 
