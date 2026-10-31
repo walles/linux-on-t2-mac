@@ -26,8 +26,9 @@ Chain: ambient light sensor (`/sys/bus/iio/devices/iio:device0`, name `als`)
 
 1. The sensor is coarse. In steady light it alternates between two or three
    values from one reading to the next, for example 15454, 16092, 15454,
-   16092. In dimmer light the step is a bigger fraction of the reading:
-   2692 / 3330 is about 20% apart.
+   16092, about 4% apart. In the recordings the biggest such step is about
+   7% (11226 / 12053 in a badly lit room). A 20% step (2692 / 3330) was
+   seen once live in a dim room, but isn't in any recording.
 2. GNOME maps light level linearly to brightness. When you set the brightness
    by hand, the current light level becomes the new reference, and from then
    on brightness follows the light level proportionally. So a 20% jump in the
