@@ -26,6 +26,10 @@ Scripts:
   writes `walk-chart-data.json`. `walk-chart.template.html` + that JSON →
   `walk-chart.html` (replace `__DATA__`), published as a private artifact:
   https://claude.ai/artifact/U6ksj6RXneMDUjW4Pf3q32
+- `split-variants.py`: replays the walk through each part of the proposed
+  gsd change on its own: a 10% relative dead zone on the stock code, the
+  timing fix alone, and both together. The dead zone alone takes the visible
+  changes while standing still from 31 to 3, with no timer.
 - `calibration.py`: pairs each "looks good" note from the walk with the
   backlight level and the median sensor value over the preceding 20 s.
   Prints the table in `../auto-brightness.md`.
