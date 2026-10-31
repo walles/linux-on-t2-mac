@@ -145,7 +145,9 @@ Plan:
 
 1. A gsd MR that adds a 10% relative dead zone: only send a new target to
    Shell when it differs from the last one sent by more than 10%. Smallest
-   change that removes most of the flapping, see the table below.
+   change that removes most of the flapping, see the table below. Opened
+   2026-10-31 as
+   [gnome-settings-daemon !501](https://gitlab.gnome.org/GNOME/gnome-settings-daemon/-/merge_requests/501).
 2. Maybe: fix the smoothing timing, with a single wakeup only when needed
    instead of polling. On top of the dead zone it gains little.
 3. Post the preferred-brightness measurements on !374 or #277 as evidence for
