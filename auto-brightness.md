@@ -142,10 +142,12 @@ Upstream, as of 2026-10-17:
 
 Plan:
 
-1. A small gsd MR that fixes the smoothing timing, adds a dead zone, and
-   schedules a single wakeup only when needed instead of polling. Links #277,
-   !374 and the Shell MRs.
-2. Post the preferred-brightness measurements on !374 or #277 as evidence for
+1. A gsd MR that adds a 10% relative dead zone: only send a new target to
+   Shell when it differs from the last one sent by more than 10%. Smallest
+   change that removes most of the flapping, see the table below.
+2. Maybe: fix the smoothing timing, with a single wakeup only when needed
+   instead of polling. On top of the dead zone it gains little.
+3. Post the preferred-brightness measurements on !374 or #277 as evidence for
    a power-law mapping, linking the data in this repo (public on GitHub,
    `walles/linux-on-t2-mac`). That's a design question upstream hasn't
    settled.
@@ -158,6 +160,7 @@ start (details and chart in [`auto-brightness/`](auto-brightness/)):
 | Stock GNOME 50 | ×3.1 | 31 | erratic, −15..+14 s | 0 |
 | Fixed timing, stock mapping | ×2.5 | 4 | −2..+33 s | 410 |
 | Fixed timing + power law | ×1.06* | 2 | 3–10 s / 12–20 s | 127, 2 while still |
+| Stock + 10% dead zone | ×2.8 | 3 | as stock | 0 |
 
 \* Fitted to the same walk, so flattering. In GNOME 50, Shell sets
 backlight = gsd's target + slider − 50%, and gsd maps the current light to a
@@ -171,6 +174,11 @@ GNOME session without Ubuntu's extensions: starting at 1% gave 17.5–18.3%,
 and the slider all the way left gave 17.2–18.5%. That's a Shell-side
 problem, separate from the gsd smoothing, reported as
 [gnome-shell #9488](https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/9488).
+
+The dead zone row is plan step 1. It also cuts the updates sent to Shell
+from 634 to 32. To reproduce, in `auto-brightness/`:
+`python3 simulate.py walk.csv --notes walk-notes.csv` for the first three
+rows, `python3 split-variants.py` for the last.
 
 Working notes, scripts and data are in [`auto-brightness/`](auto-brightness/).
 
