@@ -71,40 +71,9 @@ The bug: `dt` was spent at the previous reading, but the weight goes to the
 new one. The ambient code is identical on upstream `main` (checked
 2026-10-16), so the patch will rebase easily.
 
-## Planned design
+## Plan
 
-1. Hold each reading until the next one. On a new reading, first advance the
-   average over `dt` using the previous reading, exactly:
-   `acc = held + (acc − held) × e^(−dt / tau)`.
-2. Dead zone: only send a new target when it differs from the last one sent
-   by more than D percentage points.
-3. No polling. Since the average is analytic between readings, compute when
-   it will cross the dead zone and schedule one wakeup for then
-   (`g_timeout_add_seconds`, coalesced). In steady light: no timer wakeups
-   at all.
-4. Probably a longer `tau`, and slower dimming than brightening.
-5. Separately, maybe a later MR: power-law mapping
-   (`backlight ∝ reading^0.4`) with a floor, and treating 0 as darkness, not
-   as missing data.
-
-Simulator results so far, 20 s of bright-room data: the timing fix alone,
-with the stock `tau`, doesn't reduce flapping. A `tau` of 10–20 s or a dead
-zone of 2–3 pp removes it completely. Reaction time to real changes isn't
-measured yet; `tau` 20 s would take ~45 s to get 90% of the way.
-
-## Next steps
-
-- Done 2026-10-17: simulator rewritten and the walk replayed, results in
-  `../auto-brightness.md`. Best variant: power law ^0.4, floor 1%, tau 3 s
-  up / 10 s down, dead zone 10%, writes once a second while changing.
-- Verified 2026-10-17: with auto-brightness on, the slider at minimum gives
-  15.5–17.1% backlight, matching Shell's bias model. See
-  `../auto-brightness.md`.
-- Then patch gsd, build, and find a way to run it in place of the system
-  `gsd-power`. `org.gnome.SettingsDaemon.Power.service` refuses manual stop
-  and start, and a local build run beside the system one gets no light
-  readings. Maybe: kill the system process while preventing systemd from
-  restarting it.
+See "Improving it" in `../auto-brightness.md`.
 
 ## Shell slider fix, gnome-shell #9488
 
@@ -138,9 +107,14 @@ position, which would fix #9463 too.
 
 ## Environment
 
-- gsd clone: `~/src/gnome-settings-daemon`, branch `ambient-hold` from tag
-  `50.0` (matches the installed 50.0-1ubuntu1). No changes yet. `origin` is
-  `git@ssh.gitlab.gnome.org:GNOME/gnome-settings-daemon.git`. No fork yet.
+- gsd clone: `~/src/gnome-settings-daemon`. `origin` is
+  `git@ssh.gitlab.gnome.org:GNOME/gnome-settings-daemon.git`, `fork` is
+  `git@ssh.gitlab.gnome.org:johan.walles/gnome-settings-daemon.git`. Branch
+  `ambient-dead-zone` is !501, `ambient-hold` is tag `50.0` (matches the
+  installed 50.0-1ubuntu1).
+- Running a local `gsd-power` in place of the system one isn't solved:
+  `org.gnome.SettingsDaemon.Power.service` refuses manual stop and start,
+  and a local build run beside the system one gets no light readings.
 - Build: `meson setup build -Dprefix=/usr`, then
   `ninja -C build plugins/power/gsd-power`. Works. Build dependencies came
   from `sudo apt build-dep gnome-settings-daemon`, after adding `deb-src` to
@@ -151,8 +125,3 @@ position, which would fix #9463 too.
   Pushing needs an SSH key on gitlab.gnome.org.
 - Automatic brightness is off (`ambient-enabled false`), and stays off between
   experiments.
-
-## Unrelated problem found
-
-The screen comes back very bright after a blank. Moved to
-`../bright-screen-after-blank.md`.
