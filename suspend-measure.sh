@@ -12,8 +12,7 @@
 # gauge can re-estimate its charge after a long rest. Both matter less the
 # longer the sleep, so sleep for hours, not minutes.
 
-# The system battery, found by type: the kernel picks the name, and it changed
-# from BAT0 to macsmc-battery with the T2 kernel 7.3.
+# The system battery, found by type: the kernel picks the name.
 B=
 for s in /sys/class/power_supply/*; do
   if [ "$(cat "$s/type")" = Battery ] &&

@@ -54,10 +54,8 @@ when online. Retry whenever we get online.
   clear `ConditionACPower` and add two `ExecCondition`s:
   - A system battery in `/sys/class/power_supply/` has `capacity` at least
     30%, or we're on AC. The battery is found by `type` `Battery`, skipping
-    peripherals (`scope` `Device`), since the name can't be trusted: the T2
-    kernel 7.3 renamed it from `BAT0` to `macsmc-battery`, and the AC adapter
-    from `ADP1` to `macsmc-ac`. With the old hard coded `BAT0`, every run on
-    battery was skipped after upgrading to 7.3.
+    peripherals (`scope` `Device`), since the kernel picks the name
+    (`macsmc-battery` on the T2 kernel 7.3).
     systemd has no configurable battery level condition of its own,
     `systemd-ac-power --low` has a fixed threshold.
   - `nmcli networking connectivity` says `full`. Without this, an offline run
@@ -179,8 +177,7 @@ directories, then running `sudo systemctl daemon-reload`.
   uses about 0.52 W, so this should be fine.
 - A security update to dracut, systemd or firmware rebuilds the initramfs. The
   T2 config lives in `/etc/dracut.conf.d/` so it should survive, but the checks
-  in `install-fixes.sh` don't run. It did survive the dracut upgrade on
-  2026-10-05. To check by hand before rebooting, the first should list
+  in `install-fixes.sh` don't run. To check by hand before rebooting, the first should list
   `tbt-peg12.aml`, and the second should list `t2bce_vhci`, the keyboard driver for typing
   the disk password:
   `sudo lsinitrd /boot/initrd.img-$(uname -r) | grep tbt-peg12.aml`

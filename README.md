@@ -47,8 +47,7 @@ Sorted in priority order. Once something works, move to DONE.
 - Daily automatic upgrades. Ubuntu's `unattended-upgrades` skipped every run
   because the machine is always on battery. Now runs on battery when above
   30%, and retries when getting online. See `auto-upgrades.md`.
-  - The battery is found by type, since its name changed from `BAT0` to
-    `macsmc-battery` with the T2 kernel 7.3.
+  - The battery is found by type, since the kernel picks its name.
 - Make "Generating locales" faster by removing unused language packs. Notes in
   `locales.md`.
 - Make both Cmd keys act as Ctrl, while keeping Cmd-Tab for switching apps and
