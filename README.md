@@ -21,11 +21,9 @@ Sorted in priority order. Once something works, move to DONE.
   deqrocks has dGPU power management working on 16,x, unreleased so far:
   https://github.com/open-acpica/acpica/pull/1236#issuecomment-5927183157
 - Proper quick wakeup: https://github.com/open-acpica/acpica/pull/1236
-- Get the apple-gmux patch merged, so the screen comes back after
-  suspending with the screen on, like from the GNOME menu. Tested and
-  working, sent as https://github.com/t2linux/linux-t2-patches/pull/74.
-  Once merged, update the wiki's "Suspend workaround" section. See
-  `black-screen-after-resume.md`.
+- Check whether the t2linux wiki's "Suspend workaround" section still
+  applies, now that the screen comes back after suspending with it on since
+  the T2 kernel 7.3.1-2. See `black-screen-after-resume.md`.
 - Doing `git commit` brings up a notification saying VSCode is ready, and VSCode
   shows up behind some other windows. Can we make the window move to the front
   in this case? Some discussion here:
@@ -61,12 +59,12 @@ Sorted in priority order. Once something works, move to DONE.
   working. Specifically, keyboard, trackpad, wifi, touch bar.
   - logind handles the lid, with
     `files/etc/systemd/logind.conf.d/lid-inhibit.conf` so that it waits for
-    anything that blocks suspend, like apt installing. Since the T2 kernel
-    7.3.1-2 the screen comes back after suspending with it on, so the
-    `lid-blank-screen` workaround is gone. See `black-screen-after-resume.md`.
-  - Suspend hangs with the Radeon powered off. `lid-blank-screen` checked for
-    that, logind doesn't, so don't enable `amdgpu-off` without handling it.
-- Wake up from suspend quickly. Takes about 5s now, down from 23s.
+    anything that blocks suspend, like apt installing. The screen comes back
+    after suspending with it on, with the T2 kernel 7.3.1-2 or later. See
+    `black-screen-after-resume.md`.
+  - Suspend hangs with the Radeon powered off. logind doesn't check for
+    that, so don't enable `amdgpu-off` without handling it.
+- Wake up from suspend quickly. Takes about 5s.
   - Fixed by the Thunderbolt ACPI table override in `acpi/`, installed by
     `install-fixes.sh`. See `suspend-notes.md`.
 - GNOME thinks I have a mouse, not a trackpad. Can't two finger scroll or

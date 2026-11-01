@@ -12,8 +12,7 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 
 - `/sys/power/mem_sleep` is `s2idle [deep]`, ACPI supports S3.
 - Kernel command line already has `pm_async=off`.
-- logind ignores the lid; `lid-blank-screen` locks and turns off the screen.
-  (Since 2026-11-01 logind handles the lid instead, see the README.)
+- logind handles the lid (`lid-inhibit.conf`).
 - `amdgpu-off` powers off the Radeon through vgaswitcheroo, but the amdgpu driver
   stays bound to it.
 
@@ -171,18 +170,11 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
 
 - Suspend to RAM works on this machine. The keyboard, trackpad, touch bar and
   wifi come back, including two-finger scroll.
-- The black screen: the firmware switches the mux to the Radeon in S3, and
-  the stock apple_gmux switches it back only after i915 has resumed. Fixed in
-  the T2 kernel 7.3.1-2 without a patch, see `black-screen-after-resume.md`.
-- With the screen off before suspending and on after, like lid close does,
-  the screen works without any kernel fix.
-- Suspend on lid close works. logind does it since 2026-11-01. Before that,
-  `lid-blank-screen` suspended after turning the screen off, if the Radeon
-  was on, the lid was still closed and it wasn't docked. The Radeon check
-  read its PCI vendor ID, since `power_state` says D3hot, not D3cold, when
-  amdgpu-off has cut its power.
-- Waking takes about 23s, and we don't know yet whether the firmware or
-  Linux spends it. What we know:
+- The screen comes back after suspend since the T2 kernel 7.3.1-2, see
+  `black-screen-after-resume.md`.
+- Suspend on lid close works, through logind.
+- Waking took about 23s without the `acpi/` override, now about 5s. What we
+  know about those 23s:
   - By the wall clock, the time comes after the wake-up trigger. `rtcwake -s
     30` came back after 56s, not after 30s.
   - The kernel's own timestamps put a gap of the same size at a different
@@ -250,12 +242,10 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
   - Drop `pm_async=off` from `/etc/default/grub`, so the two controllers
     resume at the same time. That should save about 9s. It's there from the
     t2linux setup, but the current t2bce driver may not need it. It could
-    change the i915 and gmux resume order. With the patch from
-    `black-screen-after-resume.md` that shouldn't matter.
+    change the i915 and gmux resume order, so retest the screen after
+    resume.
 - Kernel fix: patch amdgpu to skip the reset in `suspend_noirq` when
   vgaswitcheroo has powered the card off, so `amdgpu-off` can stay on.
-- Suspend without turning the screen off first, like from the GNOME menu:
-  needs the patch from `black-screen-after-resume.md`.
 
 ## Side findings
 

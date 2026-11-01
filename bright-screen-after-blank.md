@@ -142,8 +142,7 @@ getting lost. Not tested.
    powers on, and writing while it's off leaves the screen black. Maybe
    the GPU drivers could tell the backlight device that the panel came
    back.
-2. Test suspend with the screen on and off, with and without the apple-gmux
-   patch from `black-screen-after-resume.md`.
+2. Test suspend with the screen on and off.
 3. Find out why it started with GNOME 49. The reporter is sure it didn't
    happen before. Possibly gnome-settings-daemon ≤ 48 wrote the brightness
    back after the screen came on, and so hid the reset. If so, mutter
