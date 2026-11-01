@@ -40,8 +40,9 @@ Check with:
 journalctl -u apt-daily.service -u apt-daily-upgrade.service
 ```
 
-The AC adapter reporting itself is fine: `/sys/class/power_supply/ADP1/online`
-just reads `0` because the adapter really isn't connected.
+The AC adapter reporting itself is fine: its `online` in
+`/sys/class/power_supply/` just reads `0` because the adapter really isn't
+connected.
 
 ## Setup
 
@@ -51,7 +52,12 @@ when online. Retry whenever we get online.
 - `files/etc/systemd/system/apt-daily.service.d/on-battery.conf` and
   `files/etc/systemd/system/apt-daily-upgrade.service.d/on-battery.conf`
   clear `ConditionACPower` and add two `ExecCondition`s:
-  - `/sys/class/power_supply/BAT0/capacity` is at least 30%, or we're on AC.
+  - A system battery in `/sys/class/power_supply/` has `capacity` at least
+    30%, or we're on AC. The battery is found by `type` `Battery`, skipping
+    peripherals (`scope` `Device`), since the name can't be trusted: the T2
+    kernel 7.3 renamed it from `BAT0` to `macsmc-battery`, and the AC adapter
+    from `ADP1` to `macsmc-ac`. With the old hard coded `BAT0`, every run on
+    battery was skipped after upgrading to 7.3.
     systemd has no configurable battery level condition of its own,
     `systemd-ac-power --low` has a fixed threshold.
   - `nmcli networking connectivity` says `full`. Without this, an offline run
@@ -87,7 +93,7 @@ when online. Retry whenever we get online.
 # The battery and connectivity checks, in a throwaway user unit. Should print
 # MAIN, change "30" to "101" or "full" to "nope" and it should be skipped.
 systemd-run --user --wait --quiet \
-  -p "ExecCondition=/bin/sh -c 'systemd-ac-power || [ \"\$\$(cat /sys/class/power_supply/BAT0/capacity)\" -ge 30 ]'" \
+  -p "ExecCondition=/bin/sh -c 'systemd-ac-power || for b in /sys/class/power_supply/*; do [ \"\$\$(cat \$\$b/type)\" = Battery ] || continue; [ \"\$\$(cat \$\$b/scope 2>/dev/null)\" = Device ] && continue; [ \"\$\$(cat \$\$b/capacity)\" -ge 30 ] && exit 0; done; exit 1'" \
   -p "ExecCondition=/bin/sh -c '[ \"\$\$(nmcli networking connectivity)\" = full ]'" \
   /bin/echo MAIN
 journalctl --user -n3
@@ -188,17 +194,34 @@ directories, then running `sudo systemctl daemon-reload`.
   serializes them on `/var/lib/apt/daily_lock`.
 - VS Code can get upgraded while it's running. Restart it if it acts up
   afterwards.
-- BAT0 is hard coded. If it's missing, runs on battery are skipped.
 - The threshold is hard coded to 30% in both drop-ins.
 
 ## Upstream
 
 Tracked in [LP #2089151](https://bugs.launchpad.net/ubuntu/+source/apt/+bug/2089151).
+Status checked 2026-11-01.
 
-- [unattended-upgrades#424](https://github.com/mvo5/unattended-upgrades/pull/424)
-  lets `OnlyOnACPower` take a battery percentage, checked before each upgrade
-  step. Once that's released, `OnlyOnACPower "30"` can replace turning it off
-  in `51unattended-upgrades-on-battery`, and a run would then also stop when
-  the battery drops below 30%.
-- `apt-daily-upgrade.service` would still need to drop
-  `ConditionACPower=true` in apt. That gets proposed once #424 is released.
+- [unattended-upgrades#424](https://github.com/mvo5/unattended-upgrades/pull/424),
+  merged 2026-10-25, adds `Unattended-Upgrade::MinBatteryLevel`, checked
+  before each upgrade step. [#437](https://github.com/mvo5/unattended-upgrades/pull/437)
+  makes 40 the default. Not in a release yet: the latest tag, 2.13, is older,
+  and Ubuntu has 2.12ubuntu9. Once it's out, `MinBatteryLevel "30"` can
+  replace turning off `OnlyOnACPower` in `51unattended-upgrades-on-battery`,
+  and a run would then also stop when the battery drops below 30%. It finds
+  batteries by type, not name, so it works with `macsmc-battery`.
+- [apt!630](https://salsa.debian.org/apt-team/apt/-/merge_requests/630),
+  merged 2026-10-20, makes apt's udev rule match AC adapters by type `Mains`
+  instead of the name `AC`. Still right with 7.3's `macsmc-ac`.
+- [apt!641](https://salsa.debian.org/apt-team/apt/-/merge_requests/641),
+  open, drops `ConditionACPower=true` from both services and leaves the
+  battery decision to unattended-upgrades. jak will upload it once
+  unattended-upgrades has landed.
+- **New problem:** unattended-upgrades asks `on_ac_power` whether it's on AC.
+  Ubuntu's powermgmt-base 1.38ubuntu2 version of it only counts batteries
+  named `BAT<n>`. With `macsmc-battery` it finds no battery and says AC
+  (exit 0) while on battery, so `MinBatteryLevel` would never stop a run
+  here. That name check comes from the Ubuntu fix for
+  [LP #1980991](https://bugs.launchpad.net/ubuntu/+source/powermgmt-base/+bug/1980991),
+  also proposed to Debian as the still open
+  [powermgmt-base!4](https://salsa.debian.org/debian/powermgmt-base/-/merge_requests/4).
+  Debian's own `on_ac_power` has no name check. Not reported yet.

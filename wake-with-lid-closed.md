@@ -94,7 +94,11 @@ asleep wakes it, so open the lid first.
 
 ## Related: charge limit
 
-macOS can stop charging at 80% to save the battery. Not available here yet:
-`BAT0` has no `charge_control_end_threshold`, and `applesmc` is loaded but has
-no device bound. macOS does this through an SMC key (`BCLM` on Intel Macs,
-maybe `CHWA` on newer firmware). Not verified on this T2 machine.
+macOS can stop charging at 80% to save the battery. Up to the T2 kernel 7.2
+the battery had no `charge_control_end_threshold`, and `applesmc` was loaded
+but had no device bound. Since 7.3 a new driver (`macsmc-power`) provides the
+battery, and it has `charge_control_end_threshold`. It read `0` on
+2026-11-01. Not tried yet. Find the battery in `/sys/class/power_supply/` by
+`type` `Battery`, its name changed with 7.3. macOS does this through an SMC
+key (`BCLM` on Intel Macs, maybe `CHWA` on newer firmware). Not verified on
+this T2 machine.

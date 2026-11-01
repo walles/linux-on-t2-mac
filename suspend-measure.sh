@@ -12,7 +12,16 @@
 # gauge can re-estimate its charge after a long rest. Both matter less the
 # longer the sleep, so sleep for hours, not minutes.
 
-B=/sys/class/power_supply/BAT0
+# The system battery, found by type: the kernel picks the name, and it changed
+# from BAT0 to macsmc-battery with the T2 kernel 7.3.
+B=
+for s in /sys/class/power_supply/*; do
+  if [ "$(cat "$s/type")" = Battery ] &&
+    [ "$(cat "$s/scope" 2>/dev/null)" != Device ]; then
+    B=$s
+    break
+  fi
+done
 LOG=/home/johan/suspend-measure.log
 MINUTES=${1:-480}
 SECONDS_ASLEEP=$((MINUTES * 60))
@@ -46,7 +55,13 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-if [ "$(cat /sys/class/power_supply/ADP1/online)" != 0 ]; then
+if [ -z "$B" ]; then
+  echo "No battery found in /sys/class/power_supply" >&2
+  exit 1
+fi
+
+# Finds the AC adapter by type too
+if systemd-ac-power; then
   echo "Unplug the power first" >&2
   exit 1
 fi
