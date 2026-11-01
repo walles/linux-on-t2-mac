@@ -41,7 +41,7 @@ Sorted in priority order. Once something works, move to DONE.
 
 - Plugging in the charger with the lid closed woke the machine, and it then
   stayed awake all night with the lid closed, getting warm. Now
-  `lid-blank-screen` suspends again after any wake with the lid closed. See
+  logind suspends again after any wake with the lid closed. See
   `wake-with-lid-closed.md`.
 - Screen brightness kept changing on its own. GNOME's Automatic Screen
   Brightness was following a coarse, flapping light sensor. Turned it off.
@@ -59,9 +59,13 @@ Sorted in priority order. Once something works, move to DONE.
 - Can we get the GNOME clock to show seconds?
 - Suspend to RAM on lid close. And wake back up on lid open with everything
   working. Specifically, keyboard, trackpad, wifi, touch bar.
-  - `files/usr/local/bin/lid-blank-screen` turns the screen off and then
-    suspends, but only with the Radeon on. The screen has to be off before
-    suspending, otherwise it stays black after the resume.
+  - logind handles the lid, with
+    `files/etc/systemd/logind.conf.d/lid-inhibit.conf` so that it waits for
+    anything that blocks suspend, like apt installing. Since the T2 kernel
+    7.3.1-2 the screen comes back after suspending with it on, so the
+    `lid-blank-screen` workaround is gone. See `black-screen-after-resume.md`.
+  - Suspend hangs with the Radeon powered off. `lid-blank-screen` checked for
+    that, logind doesn't, so don't enable `amdgpu-off` without handling it.
 - Wake up from suspend quickly. Takes about 5s now, down from 23s.
   - Fixed by the Thunderbolt ACPI table override in `acpi/`, installed by
     `install-fixes.sh`. See `suspend-notes.md`.

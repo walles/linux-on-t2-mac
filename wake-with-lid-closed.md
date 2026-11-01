@@ -1,5 +1,14 @@
 # Waking up with the lid closed
 
+**2026-11-01:** `lid-blank-screen` is gone, logind handles the lid. After any
+wake with the lid still closed, it suspends again once its 30 s
+`HoldoffTimeoutSec` has passed. Tested with the charger: woke at 15:25:16,
+asleep again at 15:25:40, and stayed asleep until the lid opened. With
+`LidSwitchIgnoreInhibited=no` it also waits for anything blocking suspend,
+like apt, and suspends once that's done (logind rechecks the lid after every
+event while it's closed). The rest of this file is from the
+`lid-blank-screen` days.
+
 The machine was warm in the morning after charging overnight. It had been
 awake all night with the lid closed and the screen off, drawing about 15-20 W
 inside the closed case.

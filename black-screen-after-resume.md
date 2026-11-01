@@ -1,12 +1,22 @@
 # Black screen after resume
 
+**Fixed in the T2 kernel 7.3.1-2, without the patch below.** On 2026-11-01,
+five suspends in a row with the screen on all came back, with
+`apple_gmux.force_igd=y` and no i915 errors. apple_gmux didn't change
+between v7.2 and v7.3, but i915 got many link training and link recovery
+changes, probably one of those. Not bisected. The pull request is closed, and
+`lid-blank-screen` is gone, logind handles the lid now.
+
+The rest of this file is about 7.2 and earlier.
+
 Suspending with the screen on, like from the GNOME menu or with `rtcwake`,
 gives a black screen after the resume. Keyboard, touch bar and everything
 else come back. Turning the screen off and on again brings it back, which is
-why `lid-blank-screen` turns the screen off before suspending.
+why `lid-blank-screen` turned the screen off before suspending.
 
 A patch to apple_gmux fixes it, sent to t2linux as
-https://github.com/t2linux/linux-t2-patches/pull/74. Tested with S3 on this
+https://github.com/t2linux/linux-t2-patches/pull/74, which got no answer
+and was closed on 2026-11-01, since 7.3 fixed it. Tested with S3 on this
 MacBookPro16,1 on 2026-10-18, see below. Hibernation and older Macs are
 untested.
 
