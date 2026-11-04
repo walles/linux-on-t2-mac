@@ -37,9 +37,8 @@ Sorted in priority order. Once something works, move to DONE.
 
 # DONE
 
-- Blender Cycles renders on the Radeon with HIP. It said "No compatible GPUs
-  found" until the HIP runtime and `hipcc` were installed. See
-  `blender-gpu.md`.
+- Blender Cycles renders on the Radeon with HIP, with denoising, using the
+  Blender Foundation's snap and Ubuntu's HIP runtime. See `blender-gpu.md`.
 - Plugging in the charger with the lid closed woke the machine, and it then
   stayed awake all night with the lid closed, getting warm. Now
   logind suspends again after any wake with the lid closed. See
