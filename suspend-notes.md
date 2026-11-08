@@ -119,7 +119,7 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     - The links are x4 at 8 GT/s now, so it's unclear which waits take the
       time.
 17. Powering the first Thunderbolt chain down and up at runtime, without
-    suspending, with `~/tb-runtime-test.sh`. The NHI (08:00.0) stays awake
+    suspending, with `tb-runtime-test.sh`. The NHI (08:00.0) stays awake
     with or without its driver bound, so the script removes it, lets the
     xHCI (09:00.0) runtime suspend, waits for the whole chain to go to D3,
     then wakes the xHCI and rescans for the NHI. Waking the xHCI and its
