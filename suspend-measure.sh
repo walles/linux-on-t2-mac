@@ -5,8 +5,8 @@
 #
 # Run unplugged, with the lid open: sudo sh ./suspend-measure.sh [minutes]
 # Try 1 minute first, to see that it wakes up. That result means nothing.
-# Results are appended to ~/suspend-measure.log, synced after every line, so
-# they survive the battery running out.
+# Results are appended to suspend-measure.log next to this script, synced
+# after every line, so they survive the battery running out.
 #
 # Going to sleep and waking up take about 10s at awake power, and the battery
 # gauge can re-estimate its charge after a long rest. Both matter less the
@@ -21,7 +21,7 @@ for s in /sys/class/power_supply/*; do
     break
   fi
 done
-LOG=/home/johan/suspend-measure.log
+LOG="$(cd "$(dirname "$0")" && pwd)/suspend-measure.log"
 MINUTES=${1:-480}
 SECONDS_ASLEEP=$((MINUTES * 60))
 
