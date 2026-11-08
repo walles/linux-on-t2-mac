@@ -4,7 +4,10 @@ Goal: Firefox shuts down cleanly on logout and shutdown, so the next start
 brings back the open tabs without the "Restore Session" page.
 
 Status: Firefox bug, reported as
-https://bugzilla.mozilla.org/show_bug.cgi?id=2086801.
+https://bugzilla.mozilla.org/show_bug.cgi?id=2086801. A fix is in review
+as https://phabricator.services.mozilla.com/D340638, and quitting when the
+session ends is
+https://bugzilla.mozilla.org/show_bug.cgi?id=2090663.
 
 ## What happens
 
