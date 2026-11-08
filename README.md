@@ -29,6 +29,11 @@ Sorted in priority order. Once something works, move to DONE.
   in this case? Some discussion here:
   https://github.com/ghostty-org/ghostty/discussions/5812#discussioncomment-18709875
   Also, Claude had some suggestion about a EDITOR wrapper for this specific case.
+- Clicking a `file:///path#6` link, from riff for example, opens VSCode at
+  the top of the file instead of on line 6. It works in iTerm2 on macOS,
+  which turns `#6` into `code --goto`. Ghostty on Linux hands the link to
+  `xdg-open`, and GLib drops the `#6`. Research and plan in
+  `~/src/ghostty/.johans-notes/`.
 - Better automatic screen brightness: fix GNOME's smoothing upstream, and
   maybe a power-law mapping. See "Improving it" in `auto-brightness.md`.
 - The screen comes back very bright after GNOME blanks it. The gmux
