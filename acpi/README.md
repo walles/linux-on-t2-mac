@@ -19,10 +19,13 @@ with `Sleep (100)` between, so each `CRMW` took 2.7s and wrote nothing. There
 are three `CRMW` calls per controller, so waking up from suspend took about
 16s longer than it has to. Now it polls 400 times and tries once.
 
-To rebuild it, with `acpica-tools` installed:
+To rebuild it, with `acpica-tools` installed, start from the firmware's own
+table. With the override active, `/sys/firmware/acpi/tables/SSDT12` is the
+patched table, so keep a copy from a boot without it in
+`SSDT12-firmware.aml`. It's Apple's code, so Git ignores it.
 
 ```
-sudo cat /sys/firmware/acpi/tables/SSDT12 >SSDT12.aml
+cp SSDT12-firmware.aml SSDT12.aml
 iasl -d SSDT12.aml
 patch SSDT12.dsl tbt-peg12.patch
 iasl -p tbt-peg12 SSDT12.dsl
