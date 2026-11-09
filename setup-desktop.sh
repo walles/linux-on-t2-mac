@@ -45,6 +45,10 @@ gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward "[]"
 # Tap right Cmd for the overview
 gsettings set org.gnome.mutter overlay-key 'Control_R'
 
+# Free Cmd-Option-Left/Right for switching tabs
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "['<Super>Page_Up', '<Super>KP_Prior', '<Super><Alt>Left']"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "['<Super>Page_Down', '<Super>KP_Next', '<Super><Alt>Right']"
+
 #
 # GNOME
 #
@@ -59,6 +63,7 @@ gsettings set org.gnome.desktop.interface clock-show-seconds true
 #
 
 put .config/ghostty/config.ghostty
+put .config/Code/User/keybindings.json
 
 # VS Code as the editor, -w waits for the file to be closed
 if ! grep -qs '^export EDITOR=' ~/.profile; then

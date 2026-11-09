@@ -1,0 +1,12 @@
+// Cmd-Option-Left/Right switches tabs, like in Ghostty and Firefox, see
+// keyboard-mappings.md
+[
+    {
+        "key": "ctrl+alt+left",
+        "command": "workbench.action.previousEditor"
+    },
+    {
+        "key": "ctrl+alt+right",
+        "command": "workbench.action.nextEditor"
+    }
+]

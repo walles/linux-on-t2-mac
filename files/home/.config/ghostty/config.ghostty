@@ -4,3 +4,8 @@
 # https://github.com/ghostty-org/ghostty/discussions/8593
 scrollback-limit = 1000000000
 font-size = 11
+
+# Cmd-Option-Left/Right switches tabs, like in Firefox and VS Code, see
+# keyboard-mappings.md. Replaces moving between splits left / right.
+keybind = ctrl+alt+arrow_left=previous_tab
+keybind = ctrl+alt+arrow_right=next_tab

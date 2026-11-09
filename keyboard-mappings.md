@@ -51,6 +51,29 @@ Firefox and VS Code don't: left Option-7 types nothing there, with or without
 Shift, and in Firefox doesn't switch to tab 7 either. Use right Option-7 in
 those.
 
+## Switching tabs
+
+The same keys in Ghostty, Firefox and VS Code:
+
+- Cmd-Option-Left / Right: previous / next tab
+- Option-1 … Option-8: go to tab 1 … 8, out of the box
+
+GNOME's default for previous / next tab is Ctrl-PageUp / PageDown (Cmd-Fn-Up /
+Down here), which still works but goes up / down for something left / right.
+
+`setup-desktop.sh` sets this up, except for Firefox:
+
+- GNOME: removes Ctrl-Alt-Left / Right from switching workspaces. Three-finger
+  swipes still do that.
+- Ghostty: `files/home/.config/ghostty/config.ghostty`. Replaces moving between
+  splits left / right.
+- VS Code: `files/home/.config/Code/User/keybindings.json`. Replaces moving the
+  editor to the previous / next group.
+- Firefox: by hand, install the
+  [Hotkeys to Switch Tabs Left and Right](https://addons.mozilla.org/firefox/addon/hotkeys-for-tabs-left-right/)
+  extension, which defaults to Ctrl-Alt-Left / Right. `about:keyboard` can't
+  change tab switching, it doesn't list it.
+
 ## Caveats
 
 - GNOME grabs Ctrl-Tab and apps don't get it. Fine, it was never used.
