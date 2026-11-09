@@ -232,8 +232,11 @@ Lower power use, for environmental reasons. Awake on battery: about 7.0 W.
     right after D3cold, so the Thunderbolt bridge's `PCI_Config` region
     gets cached as 00:00.0 and the mailbox commands go to the wrong device.
     Their fix, [open-acpica/acpica#1236](https://github.com/open-acpica/acpica/pull/1236),
-    was closed unmerged, with a t2linux maintainer saying the Apple
-    Thunderbolt ACPI paths need reverse engineering first. They got resume
+    is open but no ACPICA maintainer has replied yet. A t2linux maintainer
+    first objected to it, then confirmed the bug and backed it.
+    [open-acpica/acpica#1235](https://github.com/open-acpica/acpica/pull/1235)
+    makes the same change. Between them, people have confirmed the fix on
+    MacBookPro16,1, 14,1, 14,3 and 13,3. The #1236 author got resume
     from about 22.5s to 6.2s with it, and to 1.2–2.4s with more patches.
     The `acpi/` override is a workaround for the same thing: the mailbox
     commands still go to the wrong device, just fewer of them.
