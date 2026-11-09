@@ -1,0 +1,17 @@
+// Like FOUR_LEVEL, but left Alt (Mod1) also picks level 3 / 4.
+partial xkb_types "lalt7" {
+    virtual_modifiers Alt, LevelThree;
+    type "JOHAN_ALT_FOUR_LEVEL" {
+        modifiers = Shift + Alt + LevelThree;
+        map[None] = Level1;
+        map[Shift] = Level2;
+        map[Alt] = Level3;
+        map[Shift+Alt] = Level4;
+        map[LevelThree] = Level3;
+        map[Shift+LevelThree] = Level4;
+        level_name[Level1] = "Base";
+        level_name[Level2] = "Shift";
+        level_name[Level3] = "Alt Base";
+        level_name[Level4] = "Shift Alt";
+    };
+};

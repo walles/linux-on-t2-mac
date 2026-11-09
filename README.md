@@ -1,8 +1,42 @@
 # Outages for Linux on Johan's macBook
 
-Sorted in priority order. Once something works, move to DONE.
+## Setting up a fresh install
+
+After installing Ubuntu following https://wiki.t2linux.org/, switch to the
+T2 kernel and reboot into it:
+
+```
+sudo ./switch-to-t2-kernel.sh
+```
+
+Then run these from this directory and reboot:
+
+```
+sudo ./setup-system.sh
+./setup-desktop.sh
+```
+
+`switch-to-t2-kernel.sh` keeps the Ubuntu kernel as a fallback in the GRUB
+menu. `setup-system.sh` installs the apps and the system fixes from `files/`, and
+rebuilds GRUB and the initramfs. `setup-desktop.sh` sets up the keyboard,
+GNOME settings, Ghostty and VS Code for the logged in user. Both are safe to
+run again.
+
+Left for doing by hand:
+
+- Sign in to Firefox Sync, it brings back "Open previous windows and tabs",
+  see `firefox-session.md`.
+- Blender's HIP device, see `blender-gpu.md`.
+- To skip typing the disk password at boot, put it in
+  `/etc/cryptsetup-keys.d/cryptroot.key` before running `setup-system.sh`:
+  `printf %s PASSWORD | sudo install -D -m600 /dev/stdin /etc/cryptsetup-keys.d/cryptroot.key`.
+  No trailing newline, or it won't match. `cryptroot` is the LUKS volume
+  name from `rd.luks.name=...=cryptroot` on the kernel command line, if that
+  differs, the key file and `91-cryptroot-key.conf` need the other name.
 
 ## TODO
+
+Sorted in priority order. Once something works, move to DONE.
 
 - Firefox loses its session on shutdown and brings up the restore page on
   the next boot. SIGTERM kills it without saving, a Firefox bug, sent as
@@ -72,7 +106,7 @@ Sorted in priority order. Once something works, move to DONE.
     that, so don't enable `amdgpu-off` without handling it.
 - Wake up from suspend quickly. Takes about 5s.
   - Fixed by the Thunderbolt ACPI table override in `acpi/`, installed by
-    `install-fixes.sh`. See `suspend-notes.md`.
+    `setup-system.sh`. See `suspend-notes.md`.
 - GNOME thinks I have a mouse, not a trackpad. Can't two finger scroll or
   two-finger click for right click. GNOME settings say nothing about
   trackpads.
@@ -82,8 +116,6 @@ Sorted in priority order. Once something works, move to DONE.
   - Fixed by `files/etc/udev/rules.d/90-t2-usbc-hotplug.rules`: the USB-C
     xHCI controllers runtime-suspended and never woke on plug-in, since Apple
     firmware lacks the ACPI links for that. Now they're kept powered on.
-- The quick wake and USB drive fixes are both installed with
-  `sudo ./install-fixes.sh`.
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane. No terminal multiplexer.
   - Ghostty (`apt install ghostty`). `~/.config/ghostty/config.ghostty` sets

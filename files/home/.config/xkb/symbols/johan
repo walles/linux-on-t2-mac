@@ -1,0 +1,6 @@
+// Left Option-7 is | and left Option-Shift-7 is \, like on macOS, while
+// left Option stays Alt for every other key.
+partial alphanumeric_keys
+xkb_symbols "lalt7" {
+    key <AE07> { type[Group1] = "JOHAN_ALT_FOUR_LEVEL" };
+};

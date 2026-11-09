@@ -1,0 +1,7 @@
+! include %S/evdev
+
+! option = types
+  johan:lalt7 = +johan(lalt7)
+
+! option = symbols
+  johan:lalt7 = +johan(lalt7)

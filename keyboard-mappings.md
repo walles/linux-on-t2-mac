@@ -1,16 +1,19 @@
 # Keyboard Mappings
 
 Goal: both Cmd keys act as Ctrl, while keeping Cmd-Tab for switching apps and
-single / double tap of right Cmd for the overview / desktop picker.
+single / double tap of right Cmd for the overview / desktop picker. Left
+Option-7 types `|` and left Option-Shift-7 types `\`, like on macOS, while left
+Option stays Alt for everything else.
 
 ## Setup
 
-Applied and working. Log out and back in for the `xkb-options` change to take
-effect.
+Applied and working, by `setup-desktop.sh`. Log out and back in for the
+`xkb-options` change to take effect.
 
 ```
-# Both Cmd keys act as Ctrl: left Cmd is Control_L, right Cmd is Control_R
-gsettings set org.gnome.desktop.input-sources xkb-options "['altwin:ctrl_win']"
+# Both Cmd keys act as Ctrl: left Cmd is Control_L, right Cmd is Control_R.
+# johan:lalt7 is left Option-7, see below.
+gsettings set org.gnome.desktop.input-sources xkb-options "['altwin:ctrl_win', 'johan:lalt7']"
 
 # Cmd-Tab switches apps
 gsettings set org.gnome.desktop.wm.keybindings switch-applications "['<Control>Tab']"
@@ -27,6 +30,26 @@ gsettings set org.gnome.mutter overlay-key 'Control_R'
 ```
 
 Undo with `gsettings reset <schema> <key>`.
+
+## Left Option-7 for `|` and `\`
+
+In the `se+mac` layout `|` and `\` are on the third and fourth levels of the 7
+key, which only right Option reaches. Making all of left Option a third-level
+key (`lv3:lalt_switch`) would lose Alt shortcuts everywhere, so instead a custom
+XKB option gives only the 7 key a key type where Alt picks those levels.
+
+GNOME on Wayland reads user XKB files from `~/.config/xkb`. `setup-desktop.sh`
+copies them there from `files/home/.config/xkb/` and enables `johan:lalt7`.
+
+- `rules/evdev` includes the system rules and adds the `johan:lalt7` option
+- `types/johan` defines `JOHAN_ALT_FOUR_LEVEL`: like `FOUR_LEVEL`, but Alt also
+  picks level 3 / 4
+- `symbols/johan` gives the 7 key that type
+
+Alt is consumed on that key, so Ghostty sees a plain `|` rather than Alt-`|`.
+Firefox and VS Code don't: left Option-7 types nothing there, with or without
+Shift, and in Firefox doesn't switch to tab 7 either. Use right Option-7 in
+those.
 
 ## Caveats
 

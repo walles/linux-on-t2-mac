@@ -1,0 +1,6 @@
+# 1 GB per pane, allocated lazily. Unlimited is not supported yet. There is no
+# dedicated ticket for unlimited scrollback, but the closing comment here says
+# it's a "maybe" and would need architectural work:
+# https://github.com/ghostty-org/ghostty/discussions/8593
+scrollback-limit = 1000000000
+font-size = 11

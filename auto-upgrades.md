@@ -177,7 +177,7 @@ directories, then running `sudo systemctl daemon-reload`.
   uses about 0.52 W, so this should be fine.
 - A security update to dracut, systemd or firmware rebuilds the initramfs. The
   T2 config lives in `/etc/dracut.conf.d/` so it should survive, but the checks
-  in `install-fixes.sh` don't run. To check by hand before rebooting, the first should list
+  in `setup-system.sh` don't run. To check by hand before rebooting, the first should list
   `tbt-peg12.aml`, and the second should list `t2bce_vhci`, the keyboard driver for typing
   the disk password:
   `sudo lsinitrd /boot/initrd.img-$(uname -r) | grep tbt-peg12.aml`
