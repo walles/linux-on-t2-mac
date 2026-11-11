@@ -221,4 +221,26 @@ Status checked 2026-11-01.
   [LP #1980991](https://bugs.launchpad.net/ubuntu/+source/powermgmt-base/+bug/1980991),
   also proposed to Debian as the still open
   [powermgmt-base!4](https://salsa.debian.org/debian/powermgmt-base/-/merge_requests/4).
-  Debian's own `on_ac_power` has no name check. Not reported yet.
+  Debian's own `on_ac_power` has no name check. Reported as
+  [LP #2172719](https://bugs.launchpad.net/ubuntu/+source/powermgmt-base/+bug/2172719),
+  with a fix in
+  [MP 513978](https://code.launchpad.net/~walles/ubuntu/+source/powermgmt-base/+git/powermgmt-base/+merge/513978)
+  that counts batteries by type instead. Both filed 2026-11-01. On
+  2026-11-10 the bug was still New and the MP had had no review yet.
+
+  Patched locally on 2026-11-10 by overwriting the packaged file with the
+  MP's version (branch `lp-not-bat-battery` in `~/src/powermgmt-base-ubuntu`):
+
+  ```
+  sudo install -m 755 ~/src/powermgmt-base-ubuntu/on_ac_power /usr/sbin/on_ac_power
+  ```
+
+  Unplugged, `/usr/sbin/on_ac_power; echo $?` now prints 1, as it should.
+  `on_ac_power` isn't a conffile, so a powermgmt-base upgrade silently puts
+  the packaged version back. That's fine if the upgrade includes the fix. If
+  not, run the `install` again. `dpkg --verify powermgmt-base` lists the file
+  as changed while the patch is in place.
+
+  This doesn't affect the current setup: with `OnlyOnACPower` off,
+  unattended-upgrades never calls `on_ac_power`. It starts to matter once
+  `MinBatteryLevel` replaces `OnlyOnACPower` here.
