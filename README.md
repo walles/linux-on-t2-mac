@@ -68,6 +68,10 @@ Sorted in priority order. Once something works, move to DONE.
 - The screen comes back very bright after GNOME blanks it. The gmux
   brightness register is reset to 80% while the screen is off, and the
   kernel doesn't notice. See `bright-screen-after-blank.md`.
+- Hide the mouse pointer while typing, in all apps, as a GNOME setting.
+  Waiting upstream in https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3033
+  since 2023. Ghostty can do it alone with `mouse-hide-while-typing = true`.
+  Research and plan in `~/src/mutter/.johans-notes/`.
 
 # DONE
 
