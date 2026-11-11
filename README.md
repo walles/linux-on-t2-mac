@@ -42,10 +42,9 @@ Sorted in priority order. Once something works, move to DONE.
   the next boot. SIGTERM kills it without saving, a Firefox bug, sent as
   https://bugzilla.mozilla.org/show_bug.cgi?id=2086801. See
   `firefox-session.md`.
-- Consider the threat model for LUKS. The only thing I could imagine is the
-  computer being stolen and possibly examined by an unskilled attacker. Maybe
-  they'd boot from their own live USB and try to access data. Then decide on
-  where to go, dummy password like now or a real one?
+- Before using this machine for work: replace the dummy LUKS password, which
+  is in the unencrypted initramfs, with a real one, and use GDM autologin so
+  the disk password is the only one to type. See `disk-encryption.md`.
 - Suspend to RAM with the Radeon off. Now it only works with the Radeon on,
   which costs about 15 W extra while awake. See `suspend-notes.md`.
   deqrocks has dGPU power management working on 16,x, unreleased so far:
