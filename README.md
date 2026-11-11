@@ -42,10 +42,6 @@ Sorted in priority order. Once something works, move to DONE.
   the next boot. SIGTERM kills it without saving, a Firefox bug, sent as
   https://bugzilla.mozilla.org/show_bug.cgi?id=2086801. See
   `firefox-session.md`.
-- Retry focus-follows-mouse with auto-raise once mutter `50.1-0ubuntu2.5`
-  reaches `resolute-updates`. First try failed since focus jumped back to the
-  window under the pointer after Cmd-Tab, a mutter bug fixed in that version.
-  See `focus-follows-mouse.md`.
 - Consider the threat model for LUKS. The only thing I could imagine is the
   computer being stolen and possibly examined by an unskilled attacker. Maybe
   they'd boot from their own live USB and try to access data. Then decide on
