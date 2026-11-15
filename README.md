@@ -72,6 +72,11 @@ Sorted in priority order. Once something works, move to DONE.
   Waiting upstream in https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3033
   since 2023. Ghostty can do it alone with `mouse-hide-while-typing = true`.
   Research and plan in `~/src/mutter/.johans-notes/`.
+- Go back to Ubuntu's Ghostty deb once `apt-cache policy ghostty` shows 1.4
+  or later: `sudo snap remove ghostty && sudo apt install ghostty`, and
+  switch `setup-system.sh` back to the deb. The snap is there because
+  Ghostty 1.3 doesn't withdraw its notifications when you focus the
+  terminal, fixed in 1.4 by https://github.com/ghostty-org/ghostty/pull/14108.
 - Make Ubuntu's encrypted "Install alongside" growable, so Linux can take
   over space macOS gives up later without a second LUKS volume. That's why
   this machine has LVM under LUKS. Research and plan in
@@ -121,8 +126,9 @@ Sorted in priority order. Once something works, move to DONE.
     firmware lacks the ACPI links for that. Now they're kept powered on.
 - Get a terminal program that can do split panes. And can search in the
   infinite scrollback buffer of each tab / pane. No terminal multiplexer.
-  - Ghostty (`apt install ghostty`). `~/.config/ghostty/config.ghostty` sets
-    `scrollback-limit = 1000000000`, 1 GB per pane, allocated lazily. Truly
+  - Ghostty (`snap install ghostty --classic`).
+    `~/.config/ghostty/config.ghostty` sets `scrollback-limit = 1000000000`,
+    1 GB per pane, allocated lazily. Truly
     unlimited scrollback isn't supported by Ghostty yet, maintainer comment:
     https://github.com/ghostty-org/ghostty/discussions/8593
 - Install vscode, set as default editor

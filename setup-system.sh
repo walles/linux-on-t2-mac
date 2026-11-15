@@ -37,8 +37,11 @@ fi
 
 apt-get update
 # libamdhip64-7 and rocminfo are for Blender, see blender-gpu.md
-apt-get install -y code ghostty libamdhip64-7 rocminfo
+apt-get install -y code libamdhip64-7 rocminfo
 snap install blender --channel=5.2lts/stable --classic
+# Ghostty 1.4 withdraws its notifications when you focus the terminal, Ubuntu's
+# 1.3 deb doesn't. Switch back to the deb once Ubuntu ships 1.4, see README.md.
+snap install ghostty --classic
 
 # Fewer locales to regenerate on libc upgrades, see locales.md
 apt-get purge -y '?name("^language-pack-(gnome-)?(de|es|fr|it|pt|ru|zh-hans)(-base)?$")'
