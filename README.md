@@ -72,6 +72,10 @@ Sorted in priority order. Once something works, move to DONE.
   Waiting upstream in https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3033
   since 2023. Ghostty can do it alone with `mouse-hide-while-typing = true`.
   Research and plan in `~/src/mutter/.johans-notes/`.
+- Make Ubuntu's encrypted "Install alongside" growable, so Linux can take
+  over space macOS gives up later without a second LUKS volume. That's why
+  this machine has LVM under LUKS. Research and plan in
+  `~/src/subiquity/.johans-notes/`.
 
 # DONE
 
