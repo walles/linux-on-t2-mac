@@ -82,15 +82,17 @@ See "Improving it" in `../auto-brightness.md`.
 /org/gnome/shell/misc/brightnessManager.js`, with the auto-brightness bias
 replaced: slider below the middle scales the target down to 0, above the
 middle it interpolates up to 100%. `brightnessManager.orig.js` is the
-unpatched copy. It's loaded through `G_RESOURCE_OVERLAYS` in
-`~/.config/environment.d/90-shell-brightness-overlay.conf`, from the next
-login. Also set with `systemctl --user set-environment`, since the user
-manager may survive a logout and then not re-read environment.d. To undo,
-delete that file, run `systemctl --user unset-environment
-G_RESOURCE_OVERLAYS`, `sudo apt-mark unhold gnome-shell gnome-shell-common`
-(held since 2026-10-21 so an upgrade doesn't run this 50.1 file in a newer
-Shell; mutter updates are kept back meanwhile) and log in again (from a text console, Ctrl+Alt+F3, if
-Shell doesn't start).
+unpatched copy. Not loaded now; the system runs stock Shell. To load it, put
+`G_RESOURCE_OVERLAYS=/org/gnome/shell/misc/brightnessManager.js=<path to the
+file>` in `~/.config/environment.d/90-shell-brightness-overlay.conf` and
+also set it with `systemctl --user set-environment`, since the user manager
+may survive a logout and then not re-read environment.d. Hold `gnome-shell`
+and `gnome-shell-common` meanwhile, so an upgrade doesn't run a 50.1 file in
+a newer Shell. Log in again (from a text console, Ctrl+Alt+F3, if Shell
+doesn't start). To undo, delete the file, run `systemctl --user
+unset-environment G_RESOURCE_OVERLAYS` and `systemctl --user daemon-reload`
+(`unset-environment` only drops values set with `set-environment`, not ones
+read from environment.d), unhold and log in again.
 
 Tested 2026-10-21, Ubuntu session: Shell logged "Opened file ... as a
 resource overlay", no JS errors. Turning auto-brightness on at 17.0% gave
@@ -104,6 +106,20 @@ changes, and `_sync()` then applies the auto-brightness formula again (the
 brightness: ×1.33 below the middle now, +16.7 pp before. The new formula
 is invertible, so the MR could map the read-back value back to a slider
 position, which would fix #9463 too.
+
+## Testing gnome-shell !4347
+
+Test report:
+https://gitlab.gnome.org/GNOME/gnome-shell/-/merge_requests/4347#note_2937004.
+Tested on mutter 50.1 plus [mutter
+!5266](https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/5266), built
+in `~/src/mutter-ubuntu/` (branch `test-5266-on-50.1` in `~/src/mutter`).
+`shell-overlay-4347/` holds `brightnessManager.js` and `osdWindow.js` from
+!4347 at `ffacc859d`, loaded the same way as the slider fix, with one change:
+`get_color_mode_string?.() ?? 'default'`, since mutter 50.1 lacks that
+method. The overlay also carries main's 29c61c403 and 457f781e1.
+`test-4347.csv` is the raw backlight (`t` wall clock, `raw` of 65535)
+during the test.
 
 ## Environment
 
