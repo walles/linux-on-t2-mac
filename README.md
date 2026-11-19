@@ -81,6 +81,14 @@ Sorted in priority order. Once something works, move to DONE.
   over space macOS gives up later without a second LUKS volume. That's why
   this machine has LVM under LUKS. Research and plan in
   `~/src/subiquity/.johans-notes/`.
+- Smooth screen zoom with modifier + scroll, like Ctrl+scroll on macOS.
+  GNOME's Zoom (the magnifier) only has keyboard shortcuts today. Being built
+  in https://gitlab.gnome.org/GNOME/gnome-shell/-/merge_requests/4353
+  (`Super+Shift+scroll`), with a competing draft in
+  https://gitlab.gnome.org/GNOME/gnome-shell/-/merge_requests/4460. Until
+  then, the Deperto extension does `Super+scroll`:
+  https://github.com/orsso/deperto. Plan in
+  `~/src/gnome-shell/.johans-notes/`.
 
 # DONE
 
